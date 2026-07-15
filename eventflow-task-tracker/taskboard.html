@@ -73,7 +73,16 @@
                 <!-- HEADER (FILTER + BUTTON) -->
                 <div class="recent-tasks-header">
                     <div class="task-controls">
-                        
+
+                        <div class="view-toggle" id="viewToggle">
+                            <button class="view-btn active" id="tableViewBtn" data-view="table" title="Table view">
+                                <i class="ri-table-line"></i>
+                            </button>
+                            <button class="view-btn" id="kanbanViewBtn" data-view="kanban" title="Kanban view">
+                                <i class="ri-layout-column-line"></i>
+                            </button>
+                        </div>
+
                         <span class="filter-label">Filter:</span>
                         <select class="task-filter">
                             <option value="All Tasks">All Tasks</option>
@@ -90,21 +99,55 @@
                     </div>
                 </div>
 
-                <!-- TABLE -->
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Task</th>
-                            <th>Event Area</th>
-                            <th>Assigned To</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+                <!-- TABLE VIEW -->
+                <div class="table-view" id="tableView">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Event Area</th>
+                                <th>Assigned To</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
 
-                    <tbody id="taskTableBody"></tbody>
-                </table>
+                        <tbody id="taskTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- KANBAN VIEW -->
+                <div class="kanban-view" id="kanbanView">
+
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <span class="progress-dot"></span>
+                            <h3>In Progress</h3>
+                            <span class="kanban-count" id="kanbanCountProgress">0</span>
+                        </div>
+                        <div class="kanban-cards" id="kanbanProgress" data-status="In Progress"></div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <span class="completed-dot"></span>
+                            <h3>Completed</h3>
+                            <span class="kanban-count" id="kanbanCountCompleted">0</span>
+                        </div>
+                        <div class="kanban-cards" id="kanbanCompleted" data-status="Completed"></div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <span class="overdue-dot"></span>
+                            <h3>Overdue</h3>
+                            <span class="kanban-count" id="kanbanCountOverdue">0</span>
+                        </div>
+                        <div class="kanban-cards" id="kanbanOverdue" data-status="Overdue"></div>
+                    </div>
+
+                </div>
 
             </div>
 

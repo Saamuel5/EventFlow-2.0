@@ -81,10 +81,46 @@ const confirmModal = document.getElementById("confirmModal");
 const cancelDelete = document.getElementById("cancelDelete");
 const confirmDeleteBtn = document.getElementById("confirmDelete");
 
-let rowToDelete = null;
+let taskIdToDelete = null;
 let editingTaskId = null; // Firestore doc id of the task being edited, or null when adding
 
 const tasksRef = collection(db, "tasks");
+
+// ===============================
+// TABLE / KANBAN VIEW SWITCH
+// ===============================
+const tableView = document.getElementById("tableView");
+const kanbanView = document.getElementById("kanbanView");
+const tableViewBtn = document.getElementById("tableViewBtn");
+const kanbanViewBtn = document.getElementById("kanbanViewBtn");
+
+const kanbanColumns = {
+    "In Progress": document.getElementById("kanbanProgress"),
+    "Completed": document.getElementById("kanbanCompleted"),
+    "Overdue": document.getElementById("kanbanOverdue")
+};
+
+// Full task data keyed by Firestore doc id, kept in sync with the live
+// listener so both the table and kanban card can edit/delete without
+// re-reading it out of the DOM.
+let tasksCache = {};
+
+function setView(view) {
+    const isKanban = view === "kanban";
+
+    kanbanView.style.display = isKanban ? "flex" : "none";
+    tableView.style.display = isKanban ? "none" : "block";
+
+    kanbanViewBtn.classList.toggle("active", isKanban);
+    tableViewBtn.classList.toggle("active", !isKanban);
+
+    localStorage.setItem("eventflow-taskview", view);
+}
+
+tableViewBtn.addEventListener("click", () => setView("table"));
+kanbanViewBtn.addEventListener("click", () => setView("kanban"));
+
+setView(localStorage.getItem("eventflow-taskview") === "kanban" ? "kanban" : "table");
 
 let currentUserId = null;
 let unsubscribeTasks = null; // stops the previous listener when we switch users
@@ -356,6 +392,55 @@ function buildRow(id, task) {
 
 
 // ===============================
+// RENDER A SINGLE KANBAN CARD
+// ===============================
+function buildKanbanCard(id, task) {
+    const card = document.createElement("div");
+    card.classList.add("kanban-card");
+    card.dataset.id = id;
+    card.dataset.due = task.dueDate;
+    card.setAttribute("data-status", task.status);
+    card.setAttribute("draggable", "true");
+
+    const parsedDate = new Date(task.dueDate);
+    const formattedDate = isNaN(parsedDate)
+        ? task.dueDate
+        : parsedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    card.innerHTML = `
+        <div class="kanban-card-top">
+            <span class="kanban-card-area">${task.eventArea}</span>
+            <div class="kanban-card-actions">
+                <button class="edit-btn"><i class="ri-edit-line"></i></button>
+                <button class="delete-btn"><i class="ri-delete-bin-line"></i></button>
+            </div>
+        </div>
+        <p class="kanban-card-title">${task.taskName}</p>
+        <div class="kanban-card-footer">
+            <span class="kanban-card-assignee"><i class="ri-user-line"></i>${task.assignedTo || "Unassigned"}</span>
+            <span class="kanban-card-date"><i class="ri-calendar-line"></i>${formattedDate}</span>
+        </div>
+    `;
+
+    return card;
+}
+
+function sortKanbanCards() {
+    document.querySelectorAll(".kanban-cards").forEach((column) => {
+        const cards = Array.from(column.children);
+        cards.sort((a, b) => new Date(a.dataset.due) - new Date(b.dataset.due));
+        cards.forEach((card) => column.appendChild(card));
+    });
+}
+
+function updateKanbanCounts() {
+    document.getElementById("kanbanCountProgress").textContent = kanbanColumns["In Progress"].children.length;
+    document.getElementById("kanbanCountCompleted").textContent = kanbanColumns["Completed"].children.length;
+    document.getElementById("kanbanCountOverdue").textContent = kanbanColumns["Overdue"].children.length;
+}
+
+
+// ===============================
 // LIVE SYNC WITH FIRESTORE (SCOPED TO THE CURRENT USER)
 // ===============================
 // Whenever this user's tasks change in Firestore (add/edit/delete, from
@@ -368,13 +453,24 @@ function startTaskListener() {
     unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
 
         tableBody.innerHTML = "";
+        Object.values(kanbanColumns).forEach((column) => (column.innerHTML = ""));
+        tasksCache = {};
 
         snapshot.forEach((docSnap) => {
-            const row = buildRow(docSnap.id, docSnap.data());
+            const task = docSnap.data();
+            tasksCache[docSnap.id] = task;
+
+            const row = buildRow(docSnap.id, task);
             tableBody.appendChild(row);
+
+            const card = buildKanbanCard(docSnap.id, task);
+            const column = kanbanColumns[task.status];
+            if (column) column.appendChild(card);
         });
 
         sortTasksByDate();
+        sortKanbanCards();
+        updateKanbanCounts();
         updateUpcomingDeadlines();
         updateTaskOverview();
         filterTasks();
@@ -426,34 +522,49 @@ form.addEventListener("submit", async function (e) {
 
 
 // ===============================
-// TABLE ACTIONS
+// EDIT / DELETE (SHARED BY TABLE AND KANBAN)
 // ===============================
+function openEditModal(id) {
+    const task = tasksCache[id];
+    if (!task) return;
+
+    editingTaskId = id;
+
+    document.getElementById("task-name").value = task.taskName;
+    document.getElementById("event-area").value = task.eventArea;
+
+    assignedUsers = task.assignedTo ? task.assignedTo.split(", ").filter(Boolean) : [];
+    renderAssignedUsers();
+
+    document.getElementById("due-date").value = task.dueDate;
+    document.getElementById("status").value = task.status;
+
+    modal.classList.add("active");
+    addTaskBtn.innerHTML = "Save Changes";
+    modalTitle.textContent = "Edit Task";
+}
+
+function openDeleteConfirm(id) {
+    taskIdToDelete = id;
+    confirmModal.classList.add("active");
+}
+
+// TABLE ACTIONS
 tableBody.addEventListener("click", function (e) {
+    const id = e.target.closest("tr")?.dataset.id;
+    if (!id) return;
 
-    if (e.target.closest(".delete-btn")) {
-        rowToDelete = e.target.closest("tr");
-        confirmModal.classList.add("active");
-    }
+    if (e.target.closest(".delete-btn")) openDeleteConfirm(id);
+    if (e.target.closest(".edit-btn")) openEditModal(id);
+});
 
-    if (e.target.closest(".edit-btn")) {
+// KANBAN ACTIONS
+kanbanView.addEventListener("click", function (e) {
+    const id = e.target.closest(".kanban-card")?.dataset.id;
+    if (!id) return;
 
-        const row = e.target.closest("tr");
-        editingTaskId = row.dataset.id;
-
-        document.getElementById("task-name").value = row.cells[0].textContent;
-        document.getElementById("event-area").value = row.cells[1].textContent;
-
-        assignedUsers = row.cells[2].textContent.split(", ").filter(Boolean);
-        renderAssignedUsers();
-
-        document.getElementById("due-date").value = row.cells[3].textContent;
-        document.getElementById("status").value = row.getAttribute("data-status");
-
-        modal.classList.add("active");
-        addTaskBtn.innerHTML = "Save Changes";
-
-        modalTitle.textContent = "Edit Task";
-    }
+    if (e.target.closest(".delete-btn")) openDeleteConfirm(id);
+    if (e.target.closest(".edit-btn")) openEditModal(id);
 });
 
 
@@ -462,22 +573,72 @@ tableBody.addEventListener("click", function (e) {
 // ===============================
 cancelDelete.addEventListener("click", () => {
     confirmModal.classList.remove("active");
-    rowToDelete = null;
+    taskIdToDelete = null;
 });
 
 confirmDeleteBtn.addEventListener("click", async () => {
 
-    if (rowToDelete) {
+    if (taskIdToDelete) {
         try {
-            await deleteDoc(doc(db, "tasks", rowToDelete.dataset.id));
+            await deleteDoc(doc(db, "tasks", taskIdToDelete));
         } catch (err) {
             alert("Couldn't delete task: " + err.message);
         }
     }
 
     confirmModal.classList.remove("active");
-    rowToDelete = null;
+    taskIdToDelete = null;
     // onSnapshot handles re-rendering, sorting, and stat updates automatically
+});
+
+
+// ===============================
+// KANBAN DRAG & DROP (CHANGE STATUS BY DRAGGING BETWEEN COLUMNS)
+// ===============================
+let draggedTaskId = null;
+
+kanbanView.addEventListener("dragstart", (e) => {
+    const card = e.target.closest(".kanban-card");
+    if (!card) return;
+    draggedTaskId = card.dataset.id;
+    setTimeout(() => card.classList.add("dragging"), 0);
+});
+
+kanbanView.addEventListener("dragend", (e) => {
+    const card = e.target.closest(".kanban-card");
+    if (card) card.classList.remove("dragging");
+    draggedTaskId = null;
+});
+
+Object.values(kanbanColumns).forEach((column) => {
+
+    column.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        column.classList.add("drag-over");
+    });
+
+    column.addEventListener("dragleave", () => {
+        column.classList.remove("drag-over");
+    });
+
+    column.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        column.classList.remove("drag-over");
+
+        if (!draggedTaskId) return;
+
+        const newStatus = column.getAttribute("data-status");
+        const task = tasksCache[draggedTaskId];
+
+        if (!task || task.status === newStatus) return;
+
+        try {
+            await updateDoc(doc(db, "tasks", draggedTaskId), { status: newStatus });
+        } catch (err) {
+            alert("Couldn't update task: " + err.message);
+        }
+        // onSnapshot handles re-rendering, sorting, and stat updates automatically
+    });
 });
 
 
@@ -487,13 +648,13 @@ confirmDeleteBtn.addEventListener("click", async () => {
 function filterTasks() {
 
     const selectedFilter = taskFilter.value;
-    const rows = tableBody.querySelectorAll("tr");
+    const items = document.querySelectorAll("#taskTableBody tr, .kanban-card");
 
-    rows.forEach(row => {
+    items.forEach(item => {
 
-        const status = row.getAttribute("data-status");
+        const status = item.getAttribute("data-status");
 
-        row.style.display =
+        item.style.display =
             selectedFilter === "All Tasks" || status === selectedFilter
                 ? ""
                 : "none";
