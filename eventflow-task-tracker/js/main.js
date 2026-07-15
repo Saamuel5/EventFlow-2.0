@@ -179,7 +179,7 @@ let isSigningUp = false;
 // If the user is already logged in, skip the login page entirely
 onAuthStateChanged(auth, (user) => {
     if (user && !isSigningUp) {
-        window.location.href = "taskboard.html"
+        window.location.href = "dashboard.html"
     }
 })
 
@@ -199,7 +199,7 @@ loginForm.addEventListener("submit", async (e) => {
 
     try {
         await signInWithEmailAndPassword(auth, email.value, password.value)
-        window.location.href = "taskboard.html"
+        window.location.href = "dashboard.html"
     } catch (err) {
         alert(getAuthErrorMessage(err))
         submitBtn.disabled = false
@@ -238,7 +238,7 @@ signupForm.addEventListener("submit", async (e) => {
             displayName: `${firstName.value} ${lastName.value}`.trim()
         })
 
-        window.location.href = "taskboard.html"
+        window.location.href = "dashboard.html"
     } catch (err) {
         alert(getAuthErrorMessage(err))
         submitBtn.disabled = false

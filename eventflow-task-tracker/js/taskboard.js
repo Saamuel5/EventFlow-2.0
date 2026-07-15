@@ -46,11 +46,21 @@ closeBtn.addEventListener('click', () => {
 })
 
 //CHANGE TO DARK THEME
+// Keep the toggle icons in sync with whatever the blocking script in
+// <head> already applied on page load
+if (document.documentElement.classList.contains('dark-theme-variables')) {
+    themeToggler.querySelector('i:nth-child(1)').classList.remove('active');
+    themeToggler.querySelector('i:nth-child(2)').classList.add('active');
+}
+
 themeToggler.addEventListener('click', () =>{
-    document.body.classList.toggle('dark-theme-variables');
+    document.documentElement.classList.toggle('dark-theme-variables');
 
     themeToggler.querySelector('i:nth-child(1)').classList.toggle('active');
     themeToggler.querySelector('i:nth-child(2)').classList.toggle('active');
+
+    const isDark = document.documentElement.classList.contains('dark-theme-variables');
+    localStorage.setItem('eventflow-theme', isDark ? 'dark' : 'light');
 })
 
 // ===============================
