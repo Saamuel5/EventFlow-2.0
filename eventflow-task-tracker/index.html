@@ -45,8 +45,8 @@
                         <div class="login__box">
                             <i class="ri-mail-line login__icon"></i>
                             <input type="email" name="email" autocomplete="email" 
-                                required placeholder=" " class="login__input" id="email">
-                            <label for="email" class="login__label">Email</label>
+                                required placeholder=" " class="login__input" id="login_email">
+                            <label for="login_email" class="login__label">Email</label>
                         </div>
 
                         <!--PASSWORD-->
@@ -54,7 +54,7 @@
                             <i class="ri-lock-2-fill login__icon"></i>
                             <input type="password" name="password" autocomplete="current-password" 
                                 required placeholder=" " class="login__input" id="login_password">
-                            <label for="password" class="login__label">Password</label>
+                            <label for="login_password" class="login__label">Password</label>
                         </div>
                     </div>
 
@@ -101,24 +101,24 @@
                         <div class="login__box">
                             <i class="ri-mail-line login__icon"></i>
                             <input type="email" name="email" autocomplete="email" 
-                                required placeholder=" " class="login__input" id="email">
-                            <label for="email" class="login__label">Email</label>
+                                required placeholder=" " class="login__input" id="signup_email">
+                            <label for="signup_email" class="login__label">Email</label>
                         </div>
 
                         <!--PASSWORD-->
                         <div class="login__box">
                             <i class="ri-lock-2-fill login__icon"></i>
-                            <input type="password" name="password" autocomplete="current-password"
+                            <input type="password" name="password" autocomplete="new-password"
                                 required placeholder=" " class="login__input" id="signup_password">
-                            <label for="password" class="login__label">Password</label>
+                            <label for="signup_password" class="login__label">Password</label>
                         </div>
 
                         <!--CONFIRM PASSWORD-->
                         <div class="login__box">
                             <i class="ri-lock-2-fill login__icon"></i>
-                            <input type="password" name="password" autocomplete="current-password"
+                            <input type="password" name="confirm_password" autocomplete="new-password"
                                 required placeholder=" " class="login__input" id="confirm_password">
-                            <label for="password" class="login__label">Confirm Password</label>
+                            <label for="confirm_password" class="login__label">Confirm Password</label>
                         </div>
 
                     </div>
@@ -148,8 +148,8 @@
     <!--GSAP LINK-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
 
-    <!--MAIN JS-->
-    <script src="js/main.js"></script>
+    <!--MAIN JS (module, so it can import Firebase)-->
+    <script type="module" src="js/main.js"></script>
     
 </body>
 </html>
