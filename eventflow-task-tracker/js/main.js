@@ -1,4 +1,13 @@
 /*LOGIN AND SIGN UP*/
+
+import { auth } from "./firebase-config.js";
+import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
 /*GSAP ANIMATION*/
 
 const tl = gsap.timeline({})
@@ -159,32 +168,98 @@ backLoginBtn.addEventListener("click", (e) => {
     loginWrapper.classList.remove("login--signup")
 })
 
-/*BUTTON FUNCTIONS*/
+/*===============================
+  FIREBASE AUTH
+================================*/
+
+// Tracks whether we're in the middle of a signup, so the listener below
+// doesn't redirect away before updateProfile() has saved the display name
+let isSigningUp = false;
+
+// If the user is already logged in, skip the login page entirely
+onAuthStateChanged(auth, (user) => {
+    if (user && !isSigningUp) {
+        window.location.href = "taskboard.html"
+    }
+})
+
 /*LOGIN BUTTON*/
 const loginForm = document.querySelector("#login__container form")
 
-loginForm.addEventListener("submit", (e) => {
+loginForm.addEventListener("submit", async (e) => {
     e.preventDefault()
 
-    const email = document.getElementById("email")
+    const email = document.getElementById("login_email")
     const password = document.getElementById("login_password")
+    const submitBtn = loginForm.querySelector(".login__button")
 
-    if (email.value && password.value) {
+    if (!email.value || !password.value) return
+
+    submitBtn.disabled = true
+
+    try {
+        await signInWithEmailAndPassword(auth, email.value, password.value)
         window.location.href = "taskboard.html"
+    } catch (err) {
+        alert(getAuthErrorMessage(err))
+        submitBtn.disabled = false
     }
 })
 
 /*SIGN UP BUTTON*/
 const signupForm = document.querySelector("#signup__container form")
 
-signupForm.addEventListener("submit", (e) => {
+signupForm.addEventListener("submit", async (e) => {
     e.preventDefault()
 
     const firstName = document.getElementById("first_name")
+    const lastName = document.getElementById("last_name")
+    const email = document.getElementById("signup_email")
     const password = document.getElementById("signup_password")
+    const confirmPassword = document.getElementById("confirm_password")
+    const submitBtn = signupForm.querySelector(".login__button")
 
-    if (firstName.value && password.value) {
+    if (!firstName.value || !email.value || !password.value) return
+
+    if (password.value !== confirmPassword.value) {
+        alert("Passwords do not match.")
+        return
+    }
+
+    submitBtn.disabled = true
+    isSigningUp = true
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value)
+
+        // Save their name so the rest of the app can greet them by name
+        // instead of by email
+        await updateProfile(userCredential.user, {
+            displayName: `${firstName.value} ${lastName.value}`.trim()
+        })
+
         window.location.href = "taskboard.html"
+    } catch (err) {
+        alert(getAuthErrorMessage(err))
+        submitBtn.disabled = false
+        isSigningUp = false
     }
 })
 
+// Friendlier messages for the most common Firebase Auth error codes
+function getAuthErrorMessage(err) {
+    switch (err.code) {
+        case "auth/email-already-in-use":
+            return "That email is already registered. Try logging in instead."
+        case "auth/invalid-email":
+            return "That email address doesn't look right."
+        case "auth/weak-password":
+            return "Password should be at least 6 characters."
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+            return "Incorrect email or password."
+        default:
+            return err.message
+    }
+}

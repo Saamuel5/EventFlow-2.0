@@ -1,3 +1,19 @@
+import { db, auth } from "./firebase-config.js";
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import {
+    collection,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    where
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
 const currentDate = document.getElementById("current-date");
 
 const today = new Date();
@@ -56,7 +72,39 @@ const cancelDelete = document.getElementById("cancelDelete");
 const confirmDeleteBtn = document.getElementById("confirmDelete");
 
 let rowToDelete = null;
-let editingRow = null;
+let editingTaskId = null; // Firestore doc id of the task being edited, or null when adding
+
+const tasksRef = collection(db, "tasks");
+
+let currentUserId = null;
+let unsubscribeTasks = null; // stops the previous listener when we switch users
+
+
+// ===============================
+// AUTH GUARD
+// ===============================
+// Only signed-in users may view the taskboard, and each user only ever
+// sees their own tasks. Everyone else gets bounced back to the login page.
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    currentUserId = user.uid;
+
+    const profileName = document.querySelector(".profile .info p b");
+    if (profileName) {
+        // Use the first name they signed up with; fall back to email for
+        // any older accounts that don't have a display name saved
+        profileName.textContent = user.displayName
+            ? user.displayName.split(" ")[0]
+            : user.email;
+    }
+
+    if (unsubscribeTasks) unsubscribeTasks();
+    startTaskListener();
+});
 
 
 // ===============================
@@ -120,11 +168,11 @@ const taskFilter = document.querySelector(".task-filter");
 
 
 // ===============================
-// OPEN / CLOSE MODAL (FIXED)
+// OPEN / CLOSE MODAL
 // ===============================
 openModal.addEventListener("click", () => {
     modal.classList.add("active");
-    editingRow = null;
+    editingTaskId = null;
     form.reset();
     assignedUsers = [];
     renderAssignedUsers();
@@ -135,7 +183,7 @@ openModal.addEventListener("click", () => {
 
 closeModal.addEventListener("click", () => {
     modal.classList.remove("active");
-    editingRow = null;
+    editingTaskId = null;
     form.reset();
     assignedUsers = [];
     renderAssignedUsers();
@@ -269,9 +317,68 @@ function sortTasksByDate() {
 
 
 // ===============================
-// SUBMIT FORM
+// RENDER A SINGLE ROW
 // ===============================
-form.addEventListener("submit", function (e) {
+function buildRow(id, task) {
+    const row = document.createElement("tr");
+    row.dataset.id = id;
+    row.setAttribute("data-status", task.status);
+
+    row.innerHTML = `
+        <td>${task.taskName}</td>
+        <td>${task.eventArea}</td>
+        <td>${task.assignedTo}</td>
+        <td>${task.dueDate}</td>
+        <td>
+            <span class="status ${task.status.toLowerCase().replace(/\s/g, '-')}">
+                <i class="ri-circle-fill status-icon"></i>
+                ${task.status}
+            </span>
+        </td>
+        <td class="action-buttons">
+            <button class="edit-btn"><i class="ri-edit-line"></i></button>
+            <button class="delete-btn"><i class="ri-delete-bin-line"></i></button>
+        </td>
+    `;
+
+    return row;
+}
+
+
+// ===============================
+// LIVE SYNC WITH FIRESTORE (SCOPED TO THE CURRENT USER)
+// ===============================
+// Whenever this user's tasks change in Firestore (add/edit/delete, from
+// this tab or any other), rebuild the table automatically. Other users'
+// tasks are never fetched at all, since the query itself is filtered.
+function startTaskListener() {
+
+    const myTasksQuery = query(tasksRef, where("userId", "==", currentUserId));
+
+    unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
+
+        tableBody.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+            const row = buildRow(docSnap.id, docSnap.data());
+            tableBody.appendChild(row);
+        });
+
+        sortTasksByDate();
+        updateUpcomingDeadlines();
+        updateTaskOverview();
+        filterTasks();
+
+    }, (error) => {
+        console.error("Failed to load tasks:", error);
+    });
+}
+
+
+// ===============================
+// SUBMIT FORM (ADD / EDIT)
+// ===============================
+form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const taskName = document.getElementById("task-name").value;
@@ -281,59 +388,30 @@ form.addEventListener("submit", function (e) {
 
     const assignedText = assignedUsers.join(", ");
 
-    if (editingRow) {
+    addTaskBtn.disabled = true;
 
-        editingRow.cells[0].textContent = taskName;
-        editingRow.cells[1].textContent = eventArea;
-        editingRow.cells[2].textContent = assignedText;
-        editingRow.cells[3].textContent = dueDate;
+    try {
+        if (editingTaskId) {
+            // Don't touch userId on edit - the task should stay owned by whoever created it
+            const taskData = { taskName, eventArea, assignedTo: assignedText, dueDate, status };
+            await updateDoc(doc(db, "tasks", editingTaskId), taskData);
+            editingTaskId = null;
+        } else {
+            const taskData = { taskName, eventArea, assignedTo: assignedText, dueDate, status, userId: currentUserId };
+            await addDoc(tasksRef, taskData);
+        }
 
-        editingRow.setAttribute("data-status", status);
+        form.reset();
+        assignedUsers = [];
+        renderAssignedUsers();
 
-        editingRow.cells[4].innerHTML = `
-            <span class="status ${status.toLowerCase().replace(/\s/g, '-')}">
-                <i class="ri-circle-fill status-icon"></i>
-                ${status}
-            </span>
-        `;
-
-        editingRow = null;
-
-    } else {
-
-        const row = document.createElement("tr");
-        row.setAttribute("data-status", status);
-
-        row.innerHTML = `
-            <td>${taskName}</td>
-            <td>${eventArea}</td>
-            <td>${assignedText}</td>
-            <td>${dueDate}</td>
-            <td>
-                <span class="status ${status.toLowerCase().replace(/\s/g, '-')}">
-                    <i class="ri-circle-fill status-icon"></i>
-                    ${status}
-                </span>
-            </td>
-            <td class="action-buttons">
-                <button class="edit-btn"><i class="ri-edit-line"></i></button>
-                <button class="delete-btn"><i class="ri-delete-bin-line"></i></button>
-            </td>
-        `;
-
-        tableBody.appendChild(row);
+        modal.classList.remove("active");
+        // onSnapshot handles re-rendering, sorting, and stat updates automatically
+    } catch (err) {
+        alert("Couldn't save task: " + err.message);
+    } finally {
+        addTaskBtn.disabled = false;
     }
-
-    form.reset();
-    assignedUsers = [];
-    renderAssignedUsers();
-
-    modal.classList.remove("active");
-
-    sortTasksByDate();
-    updateUpcomingDeadlines();
-    updateTaskOverview();
-    filterTasks();
 });
 
 
@@ -349,16 +427,17 @@ tableBody.addEventListener("click", function (e) {
 
     if (e.target.closest(".edit-btn")) {
 
-        editingRow = e.target.closest("tr");
+        const row = e.target.closest("tr");
+        editingTaskId = row.dataset.id;
 
-        document.getElementById("task-name").value = editingRow.cells[0].textContent;
-        document.getElementById("event-area").value = editingRow.cells[1].textContent;
+        document.getElementById("task-name").value = row.cells[0].textContent;
+        document.getElementById("event-area").value = row.cells[1].textContent;
 
-        assignedUsers = editingRow.cells[2].textContent.split(", ").filter(Boolean);
+        assignedUsers = row.cells[2].textContent.split(", ").filter(Boolean);
         renderAssignedUsers();
 
-        document.getElementById("due-date").value = editingRow.cells[3].textContent;
-        document.getElementById("status").value = editingRow.getAttribute("data-status");
+        document.getElementById("due-date").value = row.cells[3].textContent;
+        document.getElementById("status").value = row.getAttribute("data-status");
 
         modal.classList.add("active");
         addTaskBtn.innerHTML = "Save Changes";
@@ -376,17 +455,19 @@ cancelDelete.addEventListener("click", () => {
     rowToDelete = null;
 });
 
-confirmDeleteBtn.addEventListener("click", () => {
+confirmDeleteBtn.addEventListener("click", async () => {
 
-    if (rowToDelete) rowToDelete.remove();
-
-    sortTasksByDate();
-    updateUpcomingDeadlines();
-    updateTaskOverview();
-    filterTasks();
+    if (rowToDelete) {
+        try {
+            await deleteDoc(doc(db, "tasks", rowToDelete.dataset.id));
+        } catch (err) {
+            alert("Couldn't delete task: " + err.message);
+        }
+    }
 
     confirmModal.classList.remove("active");
     rowToDelete = null;
+    // onSnapshot handles re-rendering, sorting, and stat updates automatically
 });
 
 
@@ -429,14 +510,11 @@ cancelLogout.addEventListener("click", () => {
     logoutModal.classList.remove("active");
 });
 
-confirmLogout.addEventListener("click", () => {
-    window.location.href = "index.html"; // or login page
+confirmLogout.addEventListener("click", async () => {
+    try {
+        if (unsubscribeTasks) unsubscribeTasks();
+        await signOut(auth);
+    } finally {
+        window.location.href = "index.html";
+    }
 });
-
-// ===============================
-// INIT
-// ===============================
-sortTasksByDate();
-updateUpcomingDeadlines();
-updateTaskOverview();
-filterTasks();
