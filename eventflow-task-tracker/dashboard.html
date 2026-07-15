@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css">
 
     <!--CSS-->
-    <link rel="stylesheet" href="css/taskboard_style.css">
+    <link rel="stylesheet" href="css/dashboard_style.css">
 
-    <title>Tasks</title>
+    <title>Home</title>
 
     <!--APPLY SAVED THEME BEFORE THE PAGE PAINTS (prevents a light-mode flash)-->
     <script>
@@ -20,13 +20,13 @@
     </script>
 </head>
 <body>
+    <!--SIDEBAR-->
     <div class="container">
-        <!--SIDEBAR-->
         <aside>
             <!--LOGO-->
             <div class="top">
                 <div class="logo">
-                    <img src="img/event_flow3_transparent2.png" alt="">
+                    <img src="img/event_flow3_trans_logo.png" alt="">
                     <h2>Event <span class="main-color">Flow</span> </h2>
                 </div>
                 <div class="close" id="close-btn">
@@ -35,7 +35,7 @@
             </div>
 
             <div class="sidebar">
-                <a href="dashboard.html">
+                <a href="dashboard.html" class="active">
                     <i class="ri-dashboard-fill"></i>
                     <h3>Dashboard</h3>
                 </a>
@@ -43,7 +43,7 @@
                     <i class="ri-calendar-event-line"></i>
                     <h3>Events</h3>
                 </a>
-                <a href="taskboard.html" class="active">
+                <a href="taskboard.html">
                     <i class="ri-todo-line"></i>
                     <h3>Tasks</h3>
                 </a>
@@ -60,37 +60,103 @@
 
         <!--MAIN SECTION-->
         <main>
-            <h1>Tasks</h1>
+            <h1>Dashboard</h1>
 
             <div class="date">
                 <i class="ri-calendar-line"></i>
                 <span id="current-date"></span>
             </div>
 
-            <!-- RECENT TASKS CARD -->
-            <div class="recent-tasks">
-
-                <!-- HEADER (FILTER + BUTTON) -->
-                <div class="recent-tasks-header">
-                    <div class="task-controls">
-                        
-                        <span class="filter-label">Filter:</span>
-                        <select class="task-filter">
-                            <option value="All Tasks">All Tasks</option>
-                            <option value="Completed">Completed</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Overdue">Overdue</option>
-                        </select>
-
-                        <button class="add-task-btn" id="openModal">
-                            <i class="ri-add-line"></i>
-                            Add Task
-                        </button>
-
+            <!--STATISTICS-->
+            <div class="insights">
+                <!--TOTAL TASKS-->
+                <div class="total-tasks"> <!--Sales-->
+                    <i class="ri-file-list-line"></i>
+                    <div class="middle">
+                        <div class="lef">
+                            <h3>Total Tasks</h3>
+                            <h1 id="totalTasksCount">0</h1>
+                        </div>
+                        <div class="progress">
+                            <svg viewBox="0 0 130 130">
+                                <circle cx='65' cy='65' r='50' class="ring-track"></circle>
+                                <circle cx='65' cy='65' r='50' id="totalTasksCircle"></circle>
+                            </svg>
+                            <div class="number">
+                                <p id="totalTasksPercent">0%</p>
+                            </div>
+                        </div>
                     </div>
+                    <small class="text-muted">All time</small>
                 </div>
 
-                <!-- TABLE -->
+                <!--IN PROGRESS-->
+                <div class="in-progress"> <!--Expenses-->
+                    <i class="ri-progress-2-line"></i>
+                    <div class="middle">
+                        <div class="lef">
+                            <h3>In Progress</h3>
+                            <h1 id="inProgressCardCount">0</h1>
+                        </div>
+                        <div class="progress">
+                            <svg viewBox="0 0 130 130">
+                                <circle cx='65' cy='65' r='50' class="ring-track"></circle>
+                                <circle cx='65' cy='65' r='50' id="inProgressCircle"></circle>
+                            </svg>
+                            <div class="number">
+                                <p id="inProgressCardPercent">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted">All time</small>
+                </div>
+
+                <!--COMPLETED-->
+                <div class="completed"> <!--Income-->
+                    <i class="ri-checkbox-line"></i>
+                    <div class="middle">
+                        <div class="lef">
+                            <h3>Completed</h3>
+                            <h1 id="completedCardCount">0</h1>
+                        </div>
+                        <div class="progress">
+                            <svg viewBox="0 0 130 130">
+                                <circle cx='65' cy='65' r='50' class="ring-track"></circle>
+                                <circle cx='65' cy='65' r='50' id="completedCircle"></circle>
+                            </svg>
+                            <div class="number">
+                                <p id="completedCardPercent">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted">All time</small>
+                </div>
+
+                <!--OVERDUE-->
+                <div class="overdue"> 
+                    <i class="ri-error-warning-line"></i>
+                    <div class="middle">
+                        <div class="lef">
+                            <h3>Overdue</h3>
+                            <h1 id="overdueCardCount">0</h1>
+                        </div>
+                        <div class="progress">
+                            <svg viewBox="0 0 130 130">
+                                <circle cx='65' cy='65' r='50' class="ring-track"></circle>
+                                <circle cx='65' cy='65' r='50' id="overdueCircle"></circle>
+                            </svg>
+                            <div class="number">
+                                <p id="overdueCardPercent">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted">All time</small>
+                </div>
+            </div>
+
+            <!---RECENT TASKS-->
+            <div class="recent-tasks"> <!--recent order-->
+                <h2><b>Recent Tasks</b></h2>
                 <table>
                     <thead>
                         <tr>
@@ -99,98 +165,17 @@
                             <th>Assigned To</th>
                             <th>Due Date</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th></th>
                         </tr>
                     </thead>
 
-                    <tbody id="taskTableBody"></tbody>
+                    <tbody id="recentTasksBody">
+                        <tr>
+                            <td colspan="6" class="text-muted">No tasks yet.</td>
+                        </tr>
+                    </tbody>
                 </table>
-
-            </div>
-
-            <!--ADD TASK FORM-->
-            <div class="modal" id="taskModal">
-                <div class="wrapper">
-                    <button class="close-modal" id="closeModal">
-                            <i class="ri-close-line"></i>
-                    </button>
-
-                    <div class="form-header">
-                        <div class="titles">
-                            <div class="title-add-tasks" id="modalTitle">Add Task</div><!--title login-->
-                        </div>
-                    </div>
-
-                    <form action="" class="add-task-form" autocomplete="off"> <!--login-form-->
-                        
-                        <!--TASK NAME-->
-                        <div class="input-box">
-                            <input type="text" class="input-field" id="task-name" required>
-                            <label for="task-name" class="label">Task Name</label>
-                            <i class="ri-todo-line icon"></i>
-                        </div>
-
-                        <!--EVENT AREA-->
-                        <div class="input-box">
-                            <input type="text" class="input-field" id="event-area" required>
-                            <label for="event-area" class="label">Event Area</label>
-                            <i class="ri-calendar-event-line icon"></i>
-                        </div>
-
-                        <!-- ASSIGNED TO (CHIPS + SELECT) -->
-                        <div class="input-box assigned-wrapper">
-
-                            <div id="selected-users" class="chips-container"></div>
-
-                            <select class="input-field" id="assigned-to">
-                                <option value="">Select User</option>
-                                <option value="Ali">Ali</option>
-                                <option value="Sarah">Sarah</option>
-                                <option value="John">John</option>
-                            </select>
-                        </div>
-
-                        <!--DATE-->
-                        <div class="input-box date-wrapper">
-                            <input type="date" class="input-field" id="due-date" required>
-
-                            <span class="date-tooltip">
-                                Please click the calendar icon to choose your date
-                            </span>
-                        </div>
-
-                        <!--STATUS-->
-                        <div class="input-box">
-                            <select class="input-field" id="status" required>
-                                <option value="">Select Status</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Overdue">Overdue</option>
-                            </select>
-                        </div>
-
-
-                        <div class="input-box">
-                            <button type="submit" class="btn-submit" id="AddTask">Add Task <i class="ri-add-large-line"></i></button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="confirm-modal" id="confirmModal">
-                <div class="confirm-box">
-                    <div class="confirm-icon">
-                        <i class="ri-delete-bin-line"></i>
-                    </div>
-
-                    <h3>Delete Task?</h3>
-                    <p>This action cannot be undone. Do you want to continue?</p>
-
-                    <div class="confirm-actions">
-                        <button id="cancelDelete" class="btn-cancel">Cancel</button>
-                        <button id="confirmDelete" class="btn-delete">Delete</button>
-                    </div>
-                </div>
+                <a href="taskboard.html">Show All</a>
             </div>
 
             <div class="confirm-modal" id="logoutModal">
@@ -210,7 +195,6 @@
 
                 </div>
             </div>
-            
         </main>
 
         <!--TOP OF THIRD SECTION-->
@@ -237,7 +221,7 @@
             <!--UPCOMING DEADLINES-->
             <div class="upcoming-deadlines"> <!--recent updates-->
                 <h2><b>Upcoming Deadlines</b></h2>
-                <div class="deadlines">
+                <div class="deadlines"> <!--updates-->
                     <div class="deadline" id="upcomingDeadlinesList">
                         <p class="text-muted">No upcoming deadlines.</p>
                     </div>
@@ -276,9 +260,9 @@
 
         </div>
 
-
     </div>
+    
 
-    <script type="module" src="js/taskboard.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
