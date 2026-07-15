@@ -265,6 +265,8 @@ aside .sidebar a:hover{
 /*STATISTICS CSS*/
 main{
     margin-top: 1.4rem;
+    min-width: 0; /* lets this grid column shrink instead of forcing the whole
+                     .container (and the .right sidebar) past the viewport edge */
 }
 
 main .date{
@@ -326,6 +328,11 @@ main .insights > div .middle{
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+main .insights > div .middle .lef{
+    min-width: 0; /* allows the text side to shrink instead of forcing
+                     the card (and grid column) wider than available space */
 }
 
 main .insights h3{
@@ -764,6 +771,17 @@ main .recent-tasks a{
     }
 }
 /*RESPONSIVE - MATCHES TASKBOARD BREAKPOINTS*/
+
+/*LAPTOPS - the 4 stat cards need ~1650px to sit in one row once the 14rem
+  sidebar + 23rem right panel are reserved. Most laptop screens don't have
+  that much room left, so wrap to 2 columns well before the row runs out
+  of space (this is separate from the 1200px breakpoint below, which also
+  collapses the sidebar and hides the right panel - that's too late for this)*/
+@media screen and (max-width: 1650px){
+    main .insights{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
 /*Big Tablets and small laptops*/
 @media screen and (max-width: 1200px){
