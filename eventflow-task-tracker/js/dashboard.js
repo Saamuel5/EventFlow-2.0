@@ -1,4 +1,5 @@
 import { db, auth } from "./firebase-config.js";
+import { isTaskOverdue, getOverdueTasks } from "./task-utils.js";
 import {
     onAuthStateChanged,
     signOut
@@ -184,6 +185,39 @@ function updateUpcomingDeadlines(tasks) {
 
 
 // ===============================
+// OVERDUE WARNING BANNER
+// ===============================
+function updateOverdueBanner(tasks) {
+
+    const banner = document.getElementById("overdueBanner");
+    const countEl = document.getElementById("overdueBannerCount");
+    const labelEl = document.getElementById("overdueBannerLabel");
+    const listEl = document.getElementById("overdueBannerList");
+    if (!banner) return;
+
+    const overdueTasks = getOverdueTasks(tasks);
+
+    if (overdueTasks.length === 0) {
+        banner.style.display = "none";
+        return;
+    }
+
+    banner.style.display = "flex";
+    countEl.textContent = overdueTasks.length;
+    labelEl.textContent = overdueTasks.length === 1 ? "task is overdue" : "tasks are overdue";
+
+    // Show up to 3 by soonest-passed due date, then a "+N more" note
+    const sorted = [...overdueTasks].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    const preview = sorted.slice(0, 3)
+        .map(t => `${t.taskName} (${t.eventArea || "No event"})`)
+        .join(" • ");
+    const extra = sorted.length > 3 ? ` +${sorted.length - 3} more` : "";
+
+    listEl.textContent = preview + extra;
+}
+
+
+// ===============================
 // RECENT TASKS TABLE
 // ===============================
 function updateRecentTasks(tasks) {
@@ -197,10 +231,13 @@ function updateRecentTasks(tasks) {
         return;
     }
 
-    // Soonest due dates first, top 5
+    // Newest first. Firestore's serverTimestamp() resolves asynchronously, so a
+    // task can briefly have a null createdAt right after it's added - treat that
+    // as "oldest" rather than crashing the sort. Tasks created before this field
+    // existed will also sort to the bottom for the same reason.
     const recent = [...tasks]
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-        .slice(0, 5);
+        .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
+        .slice(0, 10);
 
     recent.forEach(task => {
         const row = document.createElement("tr");
@@ -229,9 +266,9 @@ function updateRecentTasks(tasks) {
 function updateInsightCards(tasks) {
 
     const total = tasks.length;
-    const inProgress = tasks.filter(t => t.status === "In Progress").length;
+    const overdue = getOverdueTasks(tasks).length;
     const completed = tasks.filter(t => t.status === "Completed").length;
-    const overdue = tasks.filter(t => t.status === "Overdue").length;
+    const inProgress = tasks.filter(t => t.status === "In Progress" && !isTaskOverdue(t)).length;
 
     const pct = (count) => total === 0 ? 0 : Math.round((count / total) * 100);
 
@@ -259,8 +296,8 @@ function updateInsightCards(tasks) {
 function updateTaskOverview(tasks) {
 
     const completed = tasks.filter(t => t.status === "Completed").length;
-    const inProgress = tasks.filter(t => t.status === "In Progress").length;
-    const overdue = tasks.filter(t => t.status === "Overdue").length;
+    const overdue = getOverdueTasks(tasks).length;
+    const inProgress = tasks.filter(t => t.status === "In Progress" && !isTaskOverdue(t)).length;
 
     const total = completed + inProgress + overdue;
     const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -288,6 +325,7 @@ function startTaskListener() {
         updateRecentTasks(tasks);
         updateUpcomingDeadlines(tasks);
         updateTaskOverview(tasks);
+        updateOverdueBanner(tasks);
 
     }, (error) => {
         console.error("Failed to load tasks:", error);

@@ -1,4 +1,5 @@
 import { db, auth } from "./firebase-config.js";
+import { isTaskOverdue } from "./task-utils.js";
 import {
     onAuthStateChanged,
     signOut
@@ -11,7 +12,8 @@ import {
     doc,
     onSnapshot,
     query,
-    where
+    where,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const currentDate = document.getElementById("current-date");
@@ -76,6 +78,19 @@ const tableBody = document.getElementById("taskTableBody");
 const addTaskBtn = document.getElementById("AddTask");
 const modalTitle = document.getElementById("modalTitle");
 
+const dueDateInput = document.getElementById("due-date");
+const statusSelect = document.getElementById("status");
+const taskNameInput = document.getElementById("task-name");
+
+// Format an ISO "YYYY-MM-DD" date string (how <input type="date"> stores
+// values) as "DD/MM/YYYY" for display in the table and kanban view.
+function formatDateDMY(dateStr) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    if (!year || !month || !day) return dateStr;
+    return `${day}/${month}/${year}`;
+}
+
 // Delete modal
 const confirmModal = document.getElementById("confirmModal");
 const cancelDelete = document.getElementById("cancelDelete");
@@ -100,6 +115,10 @@ const activeEventName = document.getElementById("activeEventName");
 // If we arrived here via an event's "View Tasks" link, this holds that
 // event's id until the events/tasks listeners are ready to apply it.
 const eventIdFromUrl = new URLSearchParams(window.location.search).get("event");
+
+// If we arrived here via the dashboard's overdue warning banner, this holds
+// the status until the filter select is ready to apply it.
+const statusFromUrl = new URLSearchParams(window.location.search).get("status");
 
 // ===============================
 // TABLE / KANBAN VIEW SWITCH
@@ -183,8 +202,20 @@ selectedUsersContainer.style.flexWrap = "wrap";
 selectedUsersContainer.style.gap = "6px";
 selectedUsersContainer.style.marginBottom = "8px";
 
+// At least one person must be assigned. assignedSelect isn't itself bound
+// to assignedUsers, so its validity is set manually here and checked via
+// form.reportValidity() on submit.
+function validateAssignedUsers() {
+    if (assignedUsers.length === 0) {
+        assignedSelect.setCustomValidity("Please assign at least one person to this task.");
+    } else {
+        assignedSelect.setCustomValidity("");
+    }
+}
+
 function renderAssignedUsers() {
     selectedUsersContainer.innerHTML = "";
+    validateAssignedUsers();
 
     assignedUsers.forEach((user, index) => {
         const tag = document.createElement("span");
@@ -227,18 +258,39 @@ const overdueCountEl = document.getElementById("overdueCount");
 const progressPercentEl = document.getElementById("progressPercent");
 const progressCircle = document.getElementById("progressCircle");
 
-const taskFilter = document.querySelector(".task-filter");
+const taskFilter = document.getElementById("statusFilterSelect");
+
+if (statusFromUrl) {
+    taskFilter.value = statusFromUrl;
+}
 
 
 // ===============================
 // OPEN / CLOSE MODAL
 // ===============================
+// Guards against typo'd years (e.g. 2016 or 2126) in the due-date field.
+// When adding a new task the date also can't be in the past. When editing,
+// past dates stay allowed since a task can legitimately already be overdue.
+function setDueDateBounds(allowPast) {
+    const today = new Date();
+    const maxDate = new Date();
+    maxDate.setFullYear(today.getFullYear() + 5);
+
+    const toISO = (d) => d.toISOString().split("T")[0];
+
+    dueDateInput.min = allowPast ? "" : toISO(today);
+    dueDateInput.max = toISO(maxDate);
+}
+
 openModal.addEventListener("click", () => {
     modal.classList.add("active");
     editingTaskId = null;
     form.reset();
     assignedUsers = [];
     renderAssignedUsers();
+    setDueDateBounds(false);
+    taskNameInput.setCustomValidity("");
+    validateStatusAgainstDueDate();
 
     addTaskBtn.innerHTML = 'Add Task <i class="ri-add-large-line"></i>';
     modalTitle.textContent = "Add Task";
@@ -250,6 +302,7 @@ closeModal.addEventListener("click", () => {
     form.reset();
     assignedUsers = [];
     renderAssignedUsers();
+    taskNameInput.setCustomValidity("");
 });
 
 
@@ -302,10 +355,13 @@ function updateUpcomingDeadlines() {
         const status = row.getAttribute("data-status");
         if (status?.toLowerCase() !== "in progress") return;
 
+        const task = tasksCache[row.dataset.id];
+        if (!task) return;
+
         const taskName = row.cells[0].textContent;
         const eventArea = row.cells[1].textContent;
         const assignedTo = row.cells[3].textContent;
-        const dueDate = new Date(row.cells[4].textContent);
+        const dueDate = new Date(task.dueDate);
 
         const daysRemaining = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
 
@@ -346,10 +402,11 @@ function updateTaskOverview() {
     rows.forEach(row => {
 
         const status = row.getAttribute("data-status");
+        const task = tasksCache[row.dataset.id];
 
         if (status === "Completed") completed++;
+        else if (isTaskOverdue(task)) overdue++;
         else if (status === "In Progress") inProgress++;
-        else if (status === "Overdue") overdue++;
     });
 
     const total = completed + inProgress + overdue;
@@ -371,9 +428,11 @@ function sortTasksByDate() {
 
     const rows = Array.from(tableBody.querySelectorAll("tr"));
 
-    rows.sort((a, b) =>
-        new Date(a.cells[4].textContent) - new Date(b.cells[4].textContent)
-    );
+    rows.sort((a, b) => {
+        const dueA = tasksCache[a.dataset.id]?.dueDate || "";
+        const dueB = tasksCache[b.dataset.id]?.dueDate || "";
+        return new Date(dueA) - new Date(dueB);
+    });
 
     rows.forEach(row => tableBody.appendChild(row));
 }
@@ -408,16 +467,18 @@ function buildRow(id, task) {
         <td>${task.eventArea}</td>
         <td><span class="priority-badge priority-${priority.toLowerCase()}">${priority}</span></td>
         <td>${task.assignedTo}</td>
-        <td>${task.dueDate}</td>
+        <td>${formatDateDMY(task.dueDate)}</td>
         <td>
             <span class="status ${task.status.toLowerCase().replace(/\s/g, '-')}">
                 <i class="ri-circle-fill status-icon"></i>
                 ${task.status}
             </span>
         </td>
-        <td class="action-buttons">
-            <button class="edit-btn"><i class="ri-edit-line"></i></button>
-            <button class="delete-btn"><i class="ri-delete-bin-line"></i></button>
+        <td class="actions-cell">
+            <div class="action-buttons">
+                <button class="edit-btn"><i class="ri-edit-line"></i></button>
+                <button class="delete-btn"><i class="ri-delete-bin-line"></i></button>
+            </div>
         </td>
     `;
 
@@ -437,10 +498,7 @@ function buildKanbanCard(id, task) {
     card.setAttribute("data-event", resolveEventId(task));
     card.setAttribute("draggable", "true");
 
-    const parsedDate = new Date(task.dueDate);
-    const formattedDate = isNaN(parsedDate)
-        ? task.dueDate
-        : parsedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const formattedDate = formatDateDMY(task.dueDate);
 
     const priority = task.priority || "Medium";
 
@@ -596,12 +654,68 @@ eventFilterSelect.addEventListener("change", () => {
 
 
 // ===============================
+// DUE DATE / STATUS VALIDATION
+// ===============================
+// A task can't be "In Progress" if its due date has already passed —
+// that combination should be "Overdue" instead. Completed is still
+// allowed on a past due date (finished late is a valid state).
+//
+// Symmetrically, a task can't be "Overdue" if its due date hasn't
+// arrived yet — it isn't overdue until the date actually passes.
+function isPastDate(dateStr) {
+    if (!dateStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const due = new Date(dateStr + "T00:00:00");
+    return due < today;
+}
+
+function isFutureDate(dateStr) {
+    if (!dateStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const due = new Date(dateStr + "T00:00:00");
+    return due > today;
+}
+
+function validateStatusAgainstDueDate() {
+    if (statusSelect.value === "In Progress" && isPastDate(dueDateInput.value)) {
+        statusSelect.setCustomValidity("This due date has already passed — set status to Overdue (or Completed) instead of In Progress.");
+    } else if (statusSelect.value === "Overdue" && isFutureDate(dueDateInput.value)) {
+        statusSelect.setCustomValidity("This due date hasn't passed yet — a task can't be Overdue until its due date arrives.");
+    } else {
+        statusSelect.setCustomValidity("");
+    }
+}
+
+dueDateInput.addEventListener("change", validateStatusAgainstDueDate);
+statusSelect.addEventListener("change", validateStatusAgainstDueDate);
+
+taskNameInput.addEventListener("input", () => taskNameInput.setCustomValidity(""));
+
+
+// ===============================
 // SUBMIT FORM (ADD / EDIT)
 // ===============================
 form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    const taskName = document.getElementById("task-name").value;
+    const taskName = taskNameInput.value.trim();
+
+    if (!taskName) {
+        taskNameInput.setCustomValidity("Task name can't be empty or just spaces.");
+        taskNameInput.reportValidity();
+        return;
+    }
+    taskNameInput.setCustomValidity("");
+
+    validateAssignedUsers();
+    if (!form.reportValidity()) return;
+
     const eventId = document.getElementById("event-area").value;
     const eventArea = eventsCache[eventId]?.eventName || "";
     const dueDate = document.getElementById("due-date").value;
@@ -619,7 +733,7 @@ form.addEventListener("submit", async function (e) {
             await updateDoc(doc(db, "tasks", editingTaskId), taskData);
             editingTaskId = null;
         } else {
-            const taskData = { taskName, eventId, eventArea, assignedTo: assignedText, dueDate, status, priority, userId: currentUserId };
+            const taskData = { taskName, eventId, eventArea, assignedTo: assignedText, dueDate, status, priority, userId: currentUserId, createdAt: serverTimestamp() };
             await addDoc(tasksRef, taskData);
         }
 
@@ -660,9 +774,11 @@ function openEditModal(id) {
     assignedUsers = task.assignedTo ? task.assignedTo.split(", ").filter(Boolean) : [];
     renderAssignedUsers();
 
+    setDueDateBounds(true);
     document.getElementById("due-date").value = task.dueDate;
     document.getElementById("status").value = task.status;
     document.getElementById("priority").value = task.priority || "";
+    validateStatusAgainstDueDate();
 
     modal.classList.add("active");
     addTaskBtn.innerHTML = "Save Changes";
@@ -757,6 +873,16 @@ Object.values(kanbanColumns).forEach((column) => {
 
         if (!task || task.status === newStatus) return;
 
+        if (newStatus === "In Progress" && isPastDate(task.dueDate)) {
+            alert("This task's due date has already passed — move it to Overdue or Completed instead of In Progress.");
+            return;
+        }
+
+        if (newStatus === "Overdue" && isFutureDate(task.dueDate)) {
+            alert("This task's due date hasn't passed yet — it can't be marked Overdue until then.");
+            return;
+        }
+
         try {
             await updateDoc(doc(db, "tasks", draggedTaskId), { status: newStatus });
         } catch (err) {
@@ -780,8 +906,10 @@ function filterTasks() {
 
         const status = item.getAttribute("data-status");
         const eventId = item.getAttribute("data-event");
+        const task = tasksCache[item.dataset.id];
 
-        const statusMatches = selectedFilter === "All Tasks" || status === selectedFilter;
+        const statusMatches = selectedFilter === "All Tasks"
+            || (selectedFilter === "Overdue" ? isTaskOverdue(task) : status === selectedFilter);
         const eventMatches = !selectedEvent || selectedEvent === "All Events" || eventId === selectedEvent;
 
         item.style.display = statusMatches && eventMatches ? "" : "none";

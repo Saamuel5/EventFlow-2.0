@@ -295,6 +295,7 @@ aside .sidebar a:hover{
 
 main{
     margin-top: 1.4rem;
+    min-width: 0;
 }
 
 main .date{
@@ -317,6 +318,56 @@ main .date i{
 main .recent-tasks{
     margin-top: 2rem;
 }
+
+/* Let the table scroll sideways on narrow screens instead of squeezing
+   every column until the text wraps and everything feels cramped */
+main .table-view{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+main .recent-tasks table{
+    min-width: 760px;
+    table-layout: fixed;
+}
+
+/* Column widths: Task / Event / Priority / Assigned To / Due Date / Status / Actions */
+.table-view table thead th:nth-child(1),
+.table-view table tbody td:nth-child(1){ width: 24%; }
+
+.table-view table thead th:nth-child(2),
+.table-view table tbody td:nth-child(2){ width: 13%; }
+
+.table-view table thead th:nth-child(3),
+.table-view table tbody td:nth-child(3){ width: 10%; }
+
+.table-view table thead th:nth-child(4),
+.table-view table tbody td:nth-child(4){ width: 13%; }
+
+.table-view table thead th:nth-child(5),
+.table-view table tbody td:nth-child(5){ width: 12%; }
+
+.table-view table thead th:nth-child(6),
+.table-view table tbody td:nth-child(6){ width: 14%; }
+
+.table-view table thead th:nth-child(7),
+.table-view table tbody td:nth-child(7){ width: 14%; }
+
+/* Task column reads left-to-right instead of centered like the rest */
+.table-view table thead th:nth-child(1),
+.table-view table tbody td:nth-child(1){
+    text-align: left;
+}
+
+/* Long task names wrap onto multiple lines instead of stretching the column */
+.table-view table tbody td:nth-child(1){
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.7;
+    padding: 0.85rem 0.5rem 0.85rem 1.2rem;
+}
+
 
 main .recent-tasks h2{
     margin-bottom: 1.4rem;
@@ -382,6 +433,15 @@ main .recent-tasks a{
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* NOTE: .actions-cell (the <td>) stays a plain table-cell on purpose —
+   applying display:flex directly to a <td> breaks table-layout:fixed's
+   column-width calculation for that column, causing it to collapse
+   instead of honoring the width rule below. The flex layout lives on
+   the .action-buttons <div> nested inside instead. */
+.actions-cell{
+    vertical-align: middle;
 }
 
 .edit-btn,
@@ -495,8 +555,6 @@ main .recent-tasks a{
     flex-direction: column;
     gap: 0.9rem;
     min-height: 4rem;
-    max-height: 60vh;
-    overflow-y: auto;
     padding: 0.2rem;
     border-radius: var(--border-radius-2);
     transition: background 150ms ease;

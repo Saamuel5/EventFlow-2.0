@@ -84,12 +84,68 @@ const closeEditTaskModal = document.getElementById("closeEditTaskModal");
 const editTaskForm = document.getElementById("editTaskForm");
 const editTaskNameInput = document.getElementById("edit-task-name");
 const editTaskEventSelect = document.getElementById("edit-task-event");
-const editTaskAssignedInput = document.getElementById("edit-task-assigned");
+const editTaskAssignedSelect = document.getElementById("edit-task-assigned-to");
+const editTaskSelectedUsersContainer = document.getElementById("edit-task-selected-users");
+editTaskSelectedUsersContainer.style.display = "flex";
+editTaskSelectedUsersContainer.style.flexWrap = "wrap";
+editTaskSelectedUsersContainer.style.gap = "6px";
+editTaskSelectedUsersContainer.style.marginBottom = "8px";
 const editTaskPrioritySelect = document.getElementById("edit-task-priority");
 const editTaskStatusSelect = document.getElementById("edit-task-status");
 const editTaskDueDateInput = document.getElementById("edit-task-due-date");
 const saveTaskBtn = document.getElementById("saveTaskBtn");
 let editingTaskId = null;
+
+// ===============================
+// MULTI USER SYSTEM (SAME BEHAVIOR AS THE TASKBOARD)
+// ===============================
+let editTaskAssignedUsers = [];
+
+// At least one person must be assigned. editTaskAssignedSelect isn't itself
+// bound to editTaskAssignedUsers, so its validity is set manually here and
+// checked via editTaskForm.reportValidity() on submit.
+function validateEditTaskAssignedUsers() {
+    if (editTaskAssignedUsers.length === 0) {
+        editTaskAssignedSelect.setCustomValidity("Please assign at least one person to this task.");
+    } else {
+        editTaskAssignedSelect.setCustomValidity("");
+    }
+}
+
+function renderEditTaskAssignedUsers() {
+    editTaskSelectedUsersContainer.innerHTML = "";
+    validateEditTaskAssignedUsers();
+
+    editTaskAssignedUsers.forEach((user, index) => {
+        const tag = document.createElement("span");
+        tag.textContent = user;
+
+        tag.style.padding = "4px 10px";
+        tag.style.borderRadius = "20px";
+        tag.style.background = "#991bdd";
+        tag.style.color = "white";
+        tag.style.fontSize = "12px";
+        tag.style.cursor = "pointer";
+
+        tag.onclick = () => {
+            editTaskAssignedUsers.splice(index, 1);
+            renderEditTaskAssignedUsers();
+        };
+
+        editTaskSelectedUsersContainer.appendChild(tag);
+    });
+}
+
+editTaskAssignedSelect.addEventListener("change", () => {
+    const value = editTaskAssignedSelect.value;
+
+    if (value && !editTaskAssignedUsers.includes(value)) {
+        editTaskAssignedUsers.push(value);
+        renderEditTaskAssignedUsers();
+    }
+
+    editTaskAssignedSelect.value = "";
+});
 
 // Edit Event modal
 const editEventModal = document.getElementById("editEventModal");
@@ -479,11 +535,21 @@ function openEditTaskModal(taskId) {
     editingTaskId = taskId;
 
     editTaskNameInput.value = task.taskName || "";
+    editTaskNameInput.setCustomValidity("");
     editTaskEventSelect.value = task.eventArea || "";
-    editTaskAssignedInput.value = task.assignedTo || "";
+
+    editTaskAssignedUsers = task.assignedTo ? task.assignedTo.split(", ").filter(Boolean) : [];
+    renderEditTaskAssignedUsers();
+
     editTaskPrioritySelect.value = task.priority || "Medium";
     editTaskStatusSelect.value = task.status || "In Progress";
+
+    // Same bounds as the taskboard: no later than 5 years from now on the
+    // upper end, but past dates stay allowed since a task can legitimately
+    // already be overdue when it's being edited.
+    setEditTaskDueDateBounds(true);
     editTaskDueDateInput.value = task.dueDate || "";
+    validateTaskStatusAgainstDueDate();
 
     dayTasksModal.classList.remove("active");
     editTaskModal.classList.add("active");
@@ -492,19 +558,90 @@ function openEditTaskModal(taskId) {
 closeEditTaskModal.addEventListener("click", () => {
     editTaskModal.classList.remove("active");
     editingTaskId = null;
+    editTaskAssignedUsers = [];
+    renderEditTaskAssignedUsers();
+    editTaskNameInput.setCustomValidity("");
 });
+
+// ===============================
+// DUE DATE / STATUS VALIDATION
+// ===============================
+// Same rule as the taskboard: a task can't be "In Progress" once its due
+// date has passed (should be Overdue or Completed instead), and it can't
+// be "Overdue" before its due date has arrived. Completed is unrestricted
+// either way.
+function isPastDate(dateStr) {
+    if (!dateStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const due = new Date(dateStr + "T00:00:00");
+    return due < today;
+}
+
+function isFutureDate(dateStr) {
+    if (!dateStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const due = new Date(dateStr + "T00:00:00");
+    return due > today;
+}
+
+function validateTaskStatusAgainstDueDate() {
+    if (editTaskStatusSelect.value === "In Progress" && isPastDate(editTaskDueDateInput.value)) {
+        editTaskStatusSelect.setCustomValidity("This due date has already passed — set status to Overdue (or Completed) instead of In Progress.");
+    } else if (editTaskStatusSelect.value === "Overdue" && isFutureDate(editTaskDueDateInput.value)) {
+        editTaskStatusSelect.setCustomValidity("This due date hasn't passed yet — a task can't be Overdue until its due date arrives.");
+    } else {
+        editTaskStatusSelect.setCustomValidity("");
+    }
+}
+
+editTaskDueDateInput.addEventListener("change", validateTaskStatusAgainstDueDate);
+editTaskStatusSelect.addEventListener("change", validateTaskStatusAgainstDueDate);
+
+editTaskNameInput.addEventListener("input", () => editTaskNameInput.setCustomValidity(""));
+
+// Guards against typo'd years (e.g. 2016 or 2126) in the due-date field,
+// same as the taskboard's setDueDateBounds. Past dates stay allowed here
+// since we're always editing an existing task, which may already be overdue.
+function setEditTaskDueDateBounds(allowPast) {
+    const today = new Date();
+    const maxDate = new Date();
+    maxDate.setFullYear(today.getFullYear() + 5);
+
+    const toISO = (d) => d.toISOString().split("T")[0];
+
+    editTaskDueDateInput.min = allowPast ? "" : toISO(today);
+    editTaskDueDateInput.max = toISO(maxDate);
+}
 
 editTaskForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!editingTaskId) return;
 
+    const taskName = editTaskNameInput.value.trim();
+
+    if (!taskName) {
+        editTaskNameInput.setCustomValidity("Task name can't be empty or just spaces.");
+        editTaskNameInput.reportValidity();
+        return;
+    }
+    editTaskNameInput.setCustomValidity("");
+
+    validateEditTaskAssignedUsers();
+    if (!editTaskForm.reportValidity()) return;
+
     saveTaskBtn.disabled = true;
 
     try {
         await updateDoc(doc(db, "tasks", editingTaskId), {
-            taskName: editTaskNameInput.value.trim(),
+            taskName,
             eventArea: editTaskEventSelect.value,
-            assignedTo: editTaskAssignedInput.value.trim(),
+            assignedTo: editTaskAssignedUsers.join(", "),
             priority: editTaskPrioritySelect.value,
             status: editTaskStatusSelect.value,
             dueDate: editTaskDueDateInput.value
@@ -512,6 +649,8 @@ editTaskForm.addEventListener("submit", async (e) => {
 
         editTaskModal.classList.remove("active");
         editingTaskId = null;
+        editTaskAssignedUsers = [];
+        renderEditTaskAssignedUsers();
         // onSnapshot handles re-rendering automatically
     } catch (err) {
         alert("Couldn't save task: " + err.message);

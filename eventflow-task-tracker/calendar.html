@@ -142,10 +142,15 @@
                             <i class="ri-calendar-event-line icon"></i>
                         </div>
 
-                        <div class="input-box">
-                            <input type="text" class="input-field" id="edit-task-assigned" placeholder=" ">
-                            <label for="edit-task-assigned" class="label">Assigned To</label>
-                            <i class="ri-user-line icon"></i>
+                        <div class="input-box assigned-wrapper">
+                            <div id="edit-task-selected-users" class="chips-container"></div>
+
+                            <select class="input-field select-field" id="edit-task-assigned-to">
+                                <option value="">Select User</option>
+                                <option value="Ali">Ali</option>
+                                <option value="Sarah">Sarah</option>
+                                <option value="John">John</option>
+                            </select>
                         </div>
 
                         <div class="input-box">
