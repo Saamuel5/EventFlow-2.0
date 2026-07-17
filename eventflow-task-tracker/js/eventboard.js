@@ -325,7 +325,9 @@ function buildEventCard(id, event) {
 
     card.innerHTML = `
         <div class="event-card-header">
-            <span class="event-card-title">${event.eventName}</span>
+            <div class="event-card-title-group">
+                <span class="event-card-title">${event.eventName}</span>
+            </div>
             <div class="event-card-actions">
                 <button class="edit-btn"><i class="ri-edit-line"></i></button>
                 <button class="delete-btn"><i class="ri-delete-bin-line"></i></button>

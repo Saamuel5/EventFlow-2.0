@@ -188,7 +188,13 @@ b{
 aside{
     background: var(--color-primary-light);
     height: 100vh;
+    position: sticky;
+    top: 0;
+    align-self: start;
     box-shadow: 8px 0 20px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 aside .top{
@@ -218,9 +224,9 @@ aside .close{
 aside .sidebar{
     display: flex;
     flex-direction: column;
-    height: 86vh;
-    position: relative;
-    top: 1rem;
+    flex: 1;
+    min-height: 0;
+    margin-top: 1rem;
 }
 
 aside h3{
@@ -245,10 +251,8 @@ aside .sidebar i{
 }
 
 aside .sidebar a:last-child{
-    position: absolute;
-    bottom: 2rem;
-    left: 0;
-    right: 0;
+    margin-top: auto;
+    margin-bottom: 2rem;
 }
 
 aside .sidebar a.active{
@@ -1466,6 +1470,14 @@ select option {
     margin-bottom: 0.6rem;
 }
 
+.event-card-title-group{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
 .event-card-title{
     font-weight: 700;
     font-size: 1.05rem;
@@ -1574,6 +1586,12 @@ select option {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+select.input-field.select-field{
+    color: var(--color-dark);
+    appearance: none;
+    cursor: pointer;
 }
 
 .priority-dot{

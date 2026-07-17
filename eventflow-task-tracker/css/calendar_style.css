@@ -168,7 +168,13 @@ b{
 aside{
     background: var(--color-primary-light);
     height: 100vh;
+    position: sticky;
+    top: 0;
+    align-self: start;
     box-shadow: 8px 0 20px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 aside .top{
@@ -198,9 +204,9 @@ aside .close{
 aside .sidebar{
     display: flex;
     flex-direction: column;
-    height: 86vh;
-    position: relative;
-    top: 1rem;
+    flex: 1;
+    min-height: 0;
+    margin-top: 1rem;
 }
 
 aside h3{
@@ -225,10 +231,8 @@ aside .sidebar i{
 }
 
 aside .sidebar a:last-child{
-    position: absolute;
-    bottom: 2rem;
-    left: 0;
-    right: 0;
+    margin-top: auto;
+    margin-bottom: 2rem;
 }
 
 aside .sidebar a.active{
@@ -997,6 +1001,7 @@ main .calendar-grid{
 
 main .calendar-day{
     min-height: 9.5rem;
+    min-width: 0;
     background: var(--color-primary-light2);
     border-radius: 0.9rem;
     padding: 0.7rem;
@@ -1004,6 +1009,7 @@ main .calendar-day{
     flex-direction: column;
     gap: 0.4rem;
     cursor: default;
+    overflow: hidden;
     transition: background 200ms ease;
 }
 
@@ -1040,10 +1046,14 @@ main .calendar-day .day-tasks{
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
     overflow: hidden;
 }
 
 main .calendar-day .task-chip{
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
     font-size: 0.85rem;
     font-weight: 700;
     padding: 3px 8px;
@@ -1090,14 +1100,20 @@ main .calendar-day .more-tasks{
 
 .day-task-header{
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     margin-bottom: 0.4rem;
 }
 
 .day-task-header b{
     color: var(--color-dark);
     font-size: 1.05rem;
+    flex: 1 1 180px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .day-task-item small{
@@ -1108,6 +1124,225 @@ main .calendar-day .more-tasks{
     font-size: 0.9rem;
 }
 
+/*CALENDAR VIEW TOGGLE (TASKS / EVENTS)*/
+.calendar-view-toggle{
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.calendar-view-toggle button{
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-1);
+    border: none;
+    background: var(--color-light);
+    color: var(--color-dark-variant);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 300ms ease;
+}
+
+.calendar-view-toggle button:hover{
+    transform: translateY(-2px);
+}
+
+.calendar-view-toggle button.active{
+    background: var(--color-primary);
+    color: white;
+}
+
+.calendar-view-toggle button.active:hover{
+    opacity: 0.9;
+}
+
+/*EVENT CHIPS IN CALENDAR DAY CELLS (EVENTS VIEW)*/
+main .calendar-day:has(.event-chip){
+    cursor: pointer;
+}
+
+main .calendar-day:has(.event-chip):hover{
+    background: var(--color-light);
+}
+
+.event-chip{
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: #1f2430;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: var(--color-info-light);
+}
+
+main .calendar-day .event-chip{
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/*EDIT BUTTON INSIDE DAY MODAL LIST ITEMS*/
+.day-task-header .edit-day-item-btn{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 187, 85, 0.15);
+    color: var(--color-warning);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.3s;
+}
+
+.day-task-header .edit-day-item-btn:hover{
+    background: var(--color-warning);
+    color: white;
+}
+
+.day-task-header .delete-day-item-btn{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 119, 130, 0.15);
+    color: var(--color-danger);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.3s;
+}
+
+.day-task-header .delete-day-item-btn:hover{
+    background: var(--color-danger);
+    color: white;
+}
+
+.day-task-header .edit-day-item-btn i,
+.day-task-header .delete-day-item-btn i{
+    font-size: 0.95rem;
+}
+
+.day-task-header-right{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+/*SHARED FORM STYLES (for the edit-task / edit-event modals)*/
+.add-task-form{
+    position: relative;
+    margin: 0 auto;
+    width: 85%;
+    transition: 0.3s;
+}
+
+.input-box{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+}
+
+.input-field{
+    width: 100%;
+    height: 55px;
+    font-size: 16px;
+    background: transparent;
+    color: var(--color-black);
+    padding: 0 20px;
+    border: 1px solid var(--text-color);
+    border-radius: 30px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-field:focus{
+    border: 1px solid var(--color-words);
+}
+
+.label{
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    color: var(--color-dark);
+    font-size: 14px;
+    transition: 0.2s;
+    cursor: text;
+}
+
+.input-field:focus ~ .label,
+.input-field:not(:placeholder-shown) ~ .label{
+    top: 0;
+    font-size: 14px;
+    background-color: var(--color-white);
+    color: var(--color-word);
+    padding: 0 10px;
+}
+
+.date-wrapper{
+    position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator{
+    cursor: pointer;
+}
+
+.dark-theme-variables input[type="date"]::-webkit-calendar-picker-indicator{
+    filter: invert(1);
+}
+
+.icon{
+    position: absolute;
+    top: 50%;
+    right: 25px;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--color-dark);
+}
+
+select.input-field.select-field{
+    color: var(--color-dark);
+    appearance: none;
+    cursor: pointer;
+}
+
+select option {
+    background-color: var(--color-white);
+    color: var(--color-dark);
+}
+
+.btn-submit{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 50px;
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-submit:hover{
+    gap: 15px;
+}
+
 /*RESPONSIVE - SHRINK CALENDAR CELLS ON SMALL SCREENS*/
 @media screen and (max-width: 768px){
     main .calendar-day{
@@ -1116,6 +1351,10 @@ main .calendar-day .more-tasks{
     }
 
     main .calendar-day .task-chip{
+        font-size: 0.7rem;
+    }
+
+    main .calendar-day .event-chip{
         font-size: 0.7rem;
     }
 
@@ -1178,6 +1417,7 @@ main .calendar-day .more-tasks{
     animation: popIn 0.25s ease forwards;
     max-height: 80vh;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .form-header{
@@ -1260,4 +1500,3 @@ main .calendar-day .more-tasks{
     background: var(--color-primary);
     color: white;
 }
-

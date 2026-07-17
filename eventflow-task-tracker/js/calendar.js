@@ -7,7 +7,10 @@ import {
     collection,
     onSnapshot,
     query,
-    where
+    where,
+    doc,
+    updateDoc,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const currentDate = document.getElementById("current-date");
@@ -72,13 +75,53 @@ const closeDayTasksModal = document.getElementById("closeDayTasksModal");
 const dayTasksTitle = document.getElementById("dayTasksTitle");
 const dayTasksList = document.getElementById("dayTasksList");
 
+const viewTasksBtn = document.getElementById("viewTasksBtn");
+const viewEventsBtn = document.getElementById("viewEventsBtn");
+
+// Edit Task modal
+const editTaskModal = document.getElementById("editTaskModal");
+const closeEditTaskModal = document.getElementById("closeEditTaskModal");
+const editTaskForm = document.getElementById("editTaskForm");
+const editTaskNameInput = document.getElementById("edit-task-name");
+const editTaskEventSelect = document.getElementById("edit-task-event");
+const editTaskAssignedInput = document.getElementById("edit-task-assigned");
+const editTaskPrioritySelect = document.getElementById("edit-task-priority");
+const editTaskStatusSelect = document.getElementById("edit-task-status");
+const editTaskDueDateInput = document.getElementById("edit-task-due-date");
+const saveTaskBtn = document.getElementById("saveTaskBtn");
+let editingTaskId = null;
+
+// Edit Event modal
+const editEventModal = document.getElementById("editEventModal");
+const closeEditEventModal = document.getElementById("closeEditEventModal");
+const editEventForm = document.getElementById("editEventForm");
+const editEventNameInput = document.getElementById("edit-event-name");
+const editEventDescriptionInput = document.getElementById("edit-event-description");
+const editEventLocationInput = document.getElementById("edit-event-location");
+const editEventDateInput = document.getElementById("edit-event-date");
+const saveEventBtn = document.getElementById("saveEventBtn");
+let editingEventId = null;
+
+// Delete confirmation (shared by both tasks and events)
+const deleteItemModal = document.getElementById("deleteItemModal");
+const deleteItemTitle = document.getElementById("deleteItemTitle");
+const deleteItemMessage = document.getElementById("deleteItemMessage");
+const cancelDeleteItem = document.getElementById("cancelDeleteItem");
+const confirmDeleteItem = document.getElementById("confirmDeleteItem");
+let itemToDeleteType = null; // "task" or "event"
+let itemToDeleteId = null;
+
 const tasksRef = collection(db, "tasks");
+const eventsRef = collection(db, "events");
 
 let currentUserId = null;
-let unsubscribeTasks = null; // stops the previous listener when we switch users
+let unsubscribeTasks = null;  // stops the previous listener when we switch users
+let unsubscribeEvents = null;
 
 let allTasks = [];          // the current user's tasks, refreshed live from Firestore
+let allEvents = [];         // the current user's events, refreshed live from Firestore
 let viewDate = new Date();  // which month is currently showing on the calendar
+let currentView = "tasks";  // "tasks" or "events" - which data the calendar currently shows
 
 
 // ===============================
@@ -100,7 +143,9 @@ onAuthStateChanged(auth, (user) => {
     }
 
     if (unsubscribeTasks) unsubscribeTasks();
+    if (unsubscribeEvents) unsubscribeEvents();
     startTaskListener();
+    startEventListener();
 });
 
 
@@ -124,6 +169,22 @@ function startTaskListener() {
     });
 }
 
+function startEventListener() {
+
+    const myEventsQuery = query(eventsRef, where("userId", "==", currentUserId));
+
+    unsubscribeEvents = onSnapshot(myEventsQuery, (snapshot) => {
+
+        allEvents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+        populateEditTaskEventOptions();
+        renderCalendar();
+
+    }, (error) => {
+        console.error("Failed to load events:", error);
+    });
+}
+
 
 // ===============================
 // CALENDAR RENDERING
@@ -136,6 +197,17 @@ function groupTasksByDate() {
         if (!task.dueDate) return;
         if (!map[task.dueDate]) map[task.dueDate] = [];
         map[task.dueDate].push(task);
+    });
+    return map;
+}
+
+// Group events by their date ("YYYY-MM-DD" -> [event, event, ...])
+function groupEventsByDate() {
+    const map = {};
+    allEvents.forEach(event => {
+        if (!event.date) return;
+        if (!map[event.date]) map[event.date] = [];
+        map[event.date].push(event);
     });
     return map;
 }
@@ -166,6 +238,7 @@ function renderCalendar() {
     });
 
     const tasksByDate = groupTasksByDate();
+    const eventsByDate = groupEventsByDate();
 
     const firstOfMonth = new Date(year, month, 1);
     const startWeekday = firstOfMonth.getDay(); // 0 = Sunday
@@ -199,7 +272,9 @@ function renderCalendar() {
     cells.forEach(cell => {
 
         const dateKey = toDateKey(cell.date);
-        const dayTasks = tasksByDate[dateKey] || [];
+        const dayItems = currentView === "tasks"
+            ? (tasksByDate[dateKey] || [])
+            : (eventsByDate[dateKey] || []);
 
         const dayEl = document.createElement("div");
         dayEl.classList.add("calendar-day");
@@ -207,28 +282,34 @@ function renderCalendar() {
         if (dateKey === todayKey) dayEl.classList.add("today");
 
         const maxVisible = 3;
-        const visibleTasks = dayTasks.slice(0, maxVisible);
-        const overflowCount = dayTasks.length - visibleTasks.length;
+        const visibleItems = dayItems.slice(0, maxVisible);
+        const overflowCount = dayItems.length - visibleItems.length;
+
+        const chipsHtml = currentView === "tasks"
+            ? visibleItems.map(task => `
+                <span class="task-chip ${statusClass(task.status)}">${task.taskName}</span>
+            `).join("")
+            : visibleItems.map(event => `
+                <span class="event-chip">${event.eventName}</span>
+            `).join("");
 
         dayEl.innerHTML = `
             <span class="day-number">${cell.date.getDate()}</span>
             <div class="day-tasks">
-                ${visibleTasks.map(task => `
-                    <span class="task-chip ${statusClass(task.status)}">${task.taskName}</span>
-                `).join("")}
+                ${chipsHtml}
                 ${overflowCount > 0 ? `<span class="more-tasks">+${overflowCount} more</span>` : ""}
             </div>
         `;
 
-        if (dayTasks.length > 0) {
-            dayEl.addEventListener("click", () => openDayTasksModal(cell.date, dayTasks));
+        if (dayItems.length > 0) {
+            dayEl.addEventListener("click", () => openDayItemsModal(cell.date, dayItems));
         }
 
         calendarGrid.appendChild(dayEl);
     });
 }
 
-function openDayTasksModal(date, tasks) {
+function openDayItemsModal(date, items) {
 
     dayTasksTitle.textContent = date.toLocaleDateString("en-US", {
         weekday: "long",
@@ -236,25 +317,255 @@ function openDayTasksModal(date, tasks) {
         day: "numeric"
     });
 
-    dayTasksList.innerHTML = tasks.map(task => `
-        <div class="day-task-item">
-            <div class="day-task-header">
-                <b>${task.taskName}</b>
-                <span class="status ${task.status.toLowerCase().replace(/\s/g, '-')}">
-                    <i class="ri-circle-fill status-icon"></i>
-                    ${task.status}
-                </span>
+    if (currentView === "tasks") {
+        dayTasksList.innerHTML = items.map(task => `
+            <div class="day-task-item">
+                <div class="day-task-header">
+                    <b>${task.taskName}</b>
+                    <div class="day-task-header-right">
+                        <span class="status ${task.status.toLowerCase().replace(/\s/g, '-')}">
+                            <i class="ri-circle-fill status-icon"></i>
+                            ${task.status}
+                        </span>
+                        <button class="edit-day-item-btn" data-id="${task.id}" title="Edit task">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button class="delete-day-item-btn" data-id="${task.id}" title="Delete task">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                </div>
+                <small class="text-muted">${task.eventArea}</small><br>
+                <small class="text-muted">Assigned to ${task.assignedTo || "—"}</small>
             </div>
-            <small class="text-muted">${task.eventArea}</small><br>
-            <small class="text-muted">Assigned to ${task.assignedTo || "—"}</small>
-        </div>
-    `).join("");
+        `).join("");
+
+        dayTasksList.querySelectorAll(".edit-day-item-btn").forEach(btn => {
+            btn.addEventListener("click", () => openEditTaskModal(btn.dataset.id));
+        });
+
+        dayTasksList.querySelectorAll(".delete-day-item-btn").forEach(btn => {
+            btn.addEventListener("click", () => openDeleteConfirm("task", btn.dataset.id));
+        });
+
+    } else {
+        dayTasksList.innerHTML = items.map(event => `
+            <div class="day-task-item">
+                <div class="day-task-header">
+                    <b>${event.eventName}</b>
+                    <div class="day-task-header-right">
+                        <button class="edit-day-item-btn" data-id="${event.id}" title="Edit event">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button class="delete-day-item-btn" data-id="${event.id}" title="Delete event">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                </div>
+                ${event.location ? `<small class="text-muted"><i class="ri-map-pin-line"></i> ${event.location}</small><br>` : ""}
+                ${event.description ? `<small class="text-muted">${event.description}</small>` : ""}
+            </div>
+        `).join("");
+
+        dayTasksList.querySelectorAll(".edit-day-item-btn").forEach(btn => {
+            btn.addEventListener("click", () => openEditEventModal(btn.dataset.id));
+        });
+
+        dayTasksList.querySelectorAll(".delete-day-item-btn").forEach(btn => {
+            btn.addEventListener("click", () => openDeleteConfirm("event", btn.dataset.id));
+        });
+    }
 
     dayTasksModal.classList.add("active");
 }
 
 closeDayTasksModal.addEventListener("click", () => {
     dayTasksModal.classList.remove("active");
+});
+
+
+// ===============================
+// VIEW TOGGLE (TASKS / EVENTS)
+// ===============================
+viewTasksBtn.addEventListener("click", () => {
+    currentView = "tasks";
+    viewTasksBtn.classList.add("active");
+    viewEventsBtn.classList.remove("active");
+    renderCalendar();
+});
+
+viewEventsBtn.addEventListener("click", () => {
+    currentView = "events";
+    viewEventsBtn.classList.add("active");
+    viewTasksBtn.classList.remove("active");
+    renderCalendar();
+});
+
+
+// ===============================
+// DELETE (SHARED CONFIRM MODAL)
+// ===============================
+function openDeleteConfirm(type, id) {
+    itemToDeleteType = type;
+    itemToDeleteId = id;
+
+    if (type === "task") {
+        deleteItemTitle.textContent = "Delete Task?";
+        deleteItemMessage.textContent = "This action cannot be undone. Do you want to continue?";
+    } else {
+        deleteItemTitle.textContent = "Delete Event?";
+        deleteItemMessage.textContent = "This action cannot be undone. Tasks linked to this event will also be deleted.";
+    }
+
+    dayTasksModal.classList.remove("active");
+    deleteItemModal.classList.add("active");
+}
+
+cancelDeleteItem.addEventListener("click", () => {
+    deleteItemModal.classList.remove("active");
+    itemToDeleteType = null;
+    itemToDeleteId = null;
+});
+
+confirmDeleteItem.addEventListener("click", async () => {
+    if (!itemToDeleteId) {
+        deleteItemModal.classList.remove("active");
+        return;
+    }
+
+    try {
+        if (itemToDeleteType === "task") {
+            await deleteDoc(doc(db, "tasks", itemToDeleteId));
+        } else {
+            // Cascade delete: same rule as the Events page - any task whose
+            // eventArea matches this event's name (trimmed, case-insensitive)
+            // gets deleted along with the event itself.
+            const event = allEvents.find(ev => ev.id === itemToDeleteId);
+            const normalizedName = (event?.eventName || "").trim().toLowerCase();
+
+            const linkedTaskIds = allTasks
+                .filter(t => (t.eventArea || "").trim().toLowerCase() === normalizedName)
+                .map(t => t.id);
+
+            await Promise.all([
+                deleteDoc(doc(db, "events", itemToDeleteId)),
+                ...linkedTaskIds.map(id => deleteDoc(doc(db, "tasks", id)))
+            ]);
+        }
+    } catch (err) {
+        alert("Couldn't delete: " + err.message);
+    }
+
+    deleteItemModal.classList.remove("active");
+    itemToDeleteType = null;
+    itemToDeleteId = null;
+    // onSnapshot handles re-rendering automatically
+});
+
+
+// ===============================
+// EDIT TASK (FROM THE DAY MODAL)
+// ===============================
+function populateEditTaskEventOptions() {
+    editTaskEventSelect.innerHTML = allEvents.map(event =>
+        `<option value="${event.eventName}">${event.eventName}</option>`
+    ).join("");
+}
+
+function openEditTaskModal(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    editingTaskId = taskId;
+
+    editTaskNameInput.value = task.taskName || "";
+    editTaskEventSelect.value = task.eventArea || "";
+    editTaskAssignedInput.value = task.assignedTo || "";
+    editTaskPrioritySelect.value = task.priority || "Medium";
+    editTaskStatusSelect.value = task.status || "In Progress";
+    editTaskDueDateInput.value = task.dueDate || "";
+
+    dayTasksModal.classList.remove("active");
+    editTaskModal.classList.add("active");
+}
+
+closeEditTaskModal.addEventListener("click", () => {
+    editTaskModal.classList.remove("active");
+    editingTaskId = null;
+});
+
+editTaskForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!editingTaskId) return;
+
+    saveTaskBtn.disabled = true;
+
+    try {
+        await updateDoc(doc(db, "tasks", editingTaskId), {
+            taskName: editTaskNameInput.value.trim(),
+            eventArea: editTaskEventSelect.value,
+            assignedTo: editTaskAssignedInput.value.trim(),
+            priority: editTaskPrioritySelect.value,
+            status: editTaskStatusSelect.value,
+            dueDate: editTaskDueDateInput.value
+        });
+
+        editTaskModal.classList.remove("active");
+        editingTaskId = null;
+        // onSnapshot handles re-rendering automatically
+    } catch (err) {
+        alert("Couldn't save task: " + err.message);
+    } finally {
+        saveTaskBtn.disabled = false;
+    }
+});
+
+
+// ===============================
+// EDIT EVENT (FROM THE DAY MODAL)
+// ===============================
+function openEditEventModal(eventId) {
+    const event = allEvents.find(ev => ev.id === eventId);
+    if (!event) return;
+
+    editingEventId = eventId;
+
+    editEventNameInput.value = event.eventName || "";
+    editEventDescriptionInput.value = event.description || "";
+    editEventLocationInput.value = event.location || "";
+    editEventDateInput.value = event.date || "";
+
+    dayTasksModal.classList.remove("active");
+    editEventModal.classList.add("active");
+}
+
+closeEditEventModal.addEventListener("click", () => {
+    editEventModal.classList.remove("active");
+    editingEventId = null;
+});
+
+editEventForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!editingEventId) return;
+
+    saveEventBtn.disabled = true;
+
+    try {
+        await updateDoc(doc(db, "events", editingEventId), {
+            eventName: editEventNameInput.value.trim(),
+            description: editEventDescriptionInput.value.trim(),
+            location: editEventLocationInput.value.trim(),
+            date: editEventDateInput.value
+        });
+
+        editEventModal.classList.remove("active");
+        editingEventId = null;
+        // onSnapshot handles re-rendering automatically
+    } catch (err) {
+        alert("Couldn't save event: " + err.message);
+    } finally {
+        saveEventBtn.disabled = false;
+    }
 });
 
 prevMonthBtn.addEventListener("click", () => {
