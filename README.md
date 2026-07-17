@@ -224,7 +224,7 @@ Complete EventFlow 2.0 by implementing a Kanban board, calendar view, overdue ta
 | Add clear validation error messages                | US15               | Shanjana De Lerra Mahendran | Incomplete |       1.5 hours |            — |
 | Prevent empty task submissions                     | US15               | Shanjana De Lerra Mahendran | Incomplete |          1 hour |            — |
 | Review the acceptance criteria for US13 to US15    | US13–US15          | Tharany A/P Jayakumar       | Incomplete |         2 hours |            — |
-| Define and finalise user stories and backlog requirements    | US13–US15          | Tharany A/P Jayakumar       | Incomplete |         2 hours |            — |
+| Define and finalise user stories and backlog technical requirements    | US13–US15          | Tharany A/P Jayakumar       | Incomplete |         2 hours |            — |
 | Test the Kanban board and task movement            | US13               | Tharany A/P Jayakumar       | Incomplete |         2 hours |            — |
 | Test the calendar view and overdue highlighting    | US14               | Tharany A/P Jayakumar       | Incomplete |         2 hours |            — |
 | Test form validation and error messages            | US15               | Tharany A/P Jayakumar       | Incomplete |       1.5 hours |            — |
