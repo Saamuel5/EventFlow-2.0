@@ -101,6 +101,12 @@ body{
     color: var(--color-dark);
 }
 
+/* While any modal is open, the page itself shouldn't scroll - only the
+   modal's own .wrapper should (see .wrapper's overflow-y: auto above) */
+body:has(.modal.active, .confirm-modal.active){
+    overflow-y: hidden;
+}
+
 .container{
     display: grid;
     width: 96%;
@@ -593,28 +599,6 @@ main .recent-tasks a{
     margin-bottom: 0.6rem;
 }
 
-/* LABEL CHIPS */
-.label-chips{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    margin-top: 0.4rem;
-}
-
-.label-chip{
-    display: inline-block;
-    padding: 0.1rem 0.6rem;
-    border-radius: 1rem;
-    background: var(--color-primary-light2);
-    color: var(--color-words);
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-.kanban-card .label-chips{
-    margin-bottom: 0.7rem;
-}
-
 @media screen and (max-width: 900px){
     .kanban-view{
         flex-direction: column;
@@ -962,7 +946,7 @@ main .recent-tasks a{
 .wrapper{
     position: relative;
     width: 430px;
-    height: 650px;
+    max-height: 85vh;
     background-color: var(--color-white);
     border-radius: 15px;
     padding: 120px 32px 64px;
@@ -972,6 +956,7 @@ main .recent-tasks a{
     transform: scale(0.85);
     opacity: 0;
     animation: popIn 0.25s ease forwards;
+    overflow-y: auto;
 }
 
 .form-header{
@@ -1024,9 +1009,8 @@ main .recent-tasks a{
 }
 
 .add-task-form{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    margin: 0 auto;
     width: 85%;
     transition: 0.3s;
 }
