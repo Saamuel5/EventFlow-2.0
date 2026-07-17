@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css">
 
     <!--CSS-->
-    <link rel="stylesheet" href="css/taskboard_style.css">
+    <link rel="stylesheet" href="css/eventboard_style.css">
 
-    <title>Tasks</title>
+    <title>Events</title>
 
     <!--APPLY SAVED THEME BEFORE THE PAGE PAINTS (prevents a light-mode flash)-->
     <script>
@@ -39,11 +39,11 @@
                     <i class="ri-dashboard-fill"></i>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="eventboard.html">
+                <a href="eventboard.html" class="active">
                     <i class="ri-calendar-event-line"></i>
                     <h3>Events</h3>
                 </a>
-                <a href="taskboard.html" class="active">
+                <a href="taskboard.html">
                     <i class="ri-todo-line"></i>
                     <h3>Tasks</h3>
                 </a>
@@ -60,109 +60,42 @@
 
         <!--MAIN SECTION-->
         <main>
-            <h1>Tasks</h1>
+            <h1>Events</h1>
 
             <div class="date">
                 <i class="ri-calendar-line"></i>
                 <span id="current-date"></span>
             </div>
 
-            <!-- RECENT TASKS CARD -->
+            <!-- EVENTS CARD -->
             <div class="recent-tasks">
 
                 <!-- HEADER (FILTER + BUTTON) -->
                 <div class="recent-tasks-header">
                     <div class="task-controls">
 
-                        <div class="view-toggle" id="viewToggle">
-                            <button class="view-btn active" id="tableViewBtn" data-view="table" title="Table view">
-                                <i class="ri-table-line"></i>
-                            </button>
-                            <button class="view-btn" id="kanbanViewBtn" data-view="kanban" title="Kanban view">
-                                <i class="ri-layout-column-line"></i>
-                            </button>
-                        </div>
-
                         <span class="filter-label">Filter:</span>
-                        <select class="task-filter">
-                            <option value="All Tasks">All Tasks</option>
-                            <option value="Completed">Completed</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Overdue">Overdue</option>
-                        </select>
-
-                        <span class="filter-label">Event:</span>
-                        <select class="task-filter" id="eventFilterSelect">
+                        <select class="task-filter" id="eventFilter">
                             <option value="All Events">All Events</option>
+                            <option value="Upcoming">Upcoming</option>
+                            <option value="Past">Past</option>
+                            <option value="No Date">No Date</option>
                         </select>
 
                         <button class="add-task-btn" id="openModal">
                             <i class="ri-add-line"></i>
-                            Add Task
+                            Add Event
                         </button>
 
                     </div>
                 </div>
 
-                <!-- ACTIVE EVENT FILTER BANNER (shown when arriving via an event's "View Tasks" link) -->
-                <div class="active-event-banner" id="activeEventBanner" style="display:none;">
-                    <span><i class="ri-filter-3-line"></i> Showing tasks for <b id="activeEventName"></b></span>
-                    <a href="taskboard.html" id="clearEventFilter">View All Tasks <i class="ri-close-line"></i></a>
-                </div>
-
-                <!-- TABLE VIEW -->
-                <div class="table-view" id="tableView">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Task</th>
-                                <th>Event</th>
-                                <th>Assigned To</th>
-                                <th>Due Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="taskTableBody"></tbody>
-                    </table>
-                </div>
-
-                <!-- KANBAN VIEW -->
-                <div class="kanban-view" id="kanbanView">
-
-                    <div class="kanban-column">
-                        <div class="kanban-column-header">
-                            <span class="progress-dot"></span>
-                            <h3>In Progress</h3>
-                            <span class="kanban-count" id="kanbanCountProgress">0</span>
-                        </div>
-                        <div class="kanban-cards" id="kanbanProgress" data-status="In Progress"></div>
-                    </div>
-
-                    <div class="kanban-column">
-                        <div class="kanban-column-header">
-                            <span class="completed-dot"></span>
-                            <h3>Completed</h3>
-                            <span class="kanban-count" id="kanbanCountCompleted">0</span>
-                        </div>
-                        <div class="kanban-cards" id="kanbanCompleted" data-status="Completed"></div>
-                    </div>
-
-                    <div class="kanban-column">
-                        <div class="kanban-column-header">
-                            <span class="overdue-dot"></span>
-                            <h3>Overdue</h3>
-                            <span class="kanban-count" id="kanbanCountOverdue">0</span>
-                        </div>
-                        <div class="kanban-cards" id="kanbanOverdue" data-status="Overdue"></div>
-                    </div>
-
-                </div>
+                <!-- EVENTS GRID -->
+                <div class="events-grid" id="eventsGrid"></div>
 
             </div>
 
-            <!--ADD TASK FORM-->
+            <!--ADD EVENT FORM-->
             <div class="modal" id="taskModal">
                 <div class="wrapper">
                     <button class="close-modal" id="closeModal">
@@ -171,61 +104,44 @@
 
                     <div class="form-header">
                         <div class="titles">
-                            <div class="title-add-tasks" id="modalTitle">Add Task</div><!--title login-->
+                            <div class="title-add-tasks" id="modalTitle">Add Event</div>
                         </div>
                     </div>
 
-                    <form action="" class="add-task-form" autocomplete="off"> <!--login-form-->
-                        
-                        <!--TASK NAME-->
+                    <form action="" class="add-task-form" autocomplete="off">
+
+                        <!--EVENT NAME-->
                         <div class="input-box">
-                            <input type="text" class="input-field" id="task-name" required>
-                            <label for="task-name" class="label">Task Name</label>
-                            <i class="ri-todo-line icon"></i>
+                            <input type="text" class="input-field" id="event-name" placeholder=" " required>
+                            <label for="event-name" class="label">Event Name</label>
+                            <i class="ri-calendar-event-line icon"></i>
                         </div>
 
-                        <!--EVENT-->
+                        <!--DESCRIPTION-->
                         <div class="input-box">
-                            <select class="input-field" id="event-area" required>
-                                <option value="">Select Event</option>
-                            </select>
+                            <input type="text" class="input-field" id="event-description" placeholder=" ">
+                            <label for="event-description" class="label">Description (optional)</label>
+                            <i class="ri-file-text-line icon"></i>
                         </div>
 
-                        <!-- ASSIGNED TO (CHIPS + SELECT) -->
-                        <div class="input-box assigned-wrapper">
-
-                            <div id="selected-users" class="chips-container"></div>
-
-                            <select class="input-field" id="assigned-to">
-                                <option value="">Select User</option>
-                                <option value="Ali">Ali</option>
-                                <option value="Sarah">Sarah</option>
-                                <option value="John">John</option>
-                            </select>
+                        <!--LOCATION-->
+                        <div class="input-box">
+                            <input type="text" class="input-field" id="event-location" placeholder=" ">
+                            <label for="event-location" class="label">Location (optional)</label>
+                            <i class="ri-map-pin-line icon"></i>
                         </div>
 
                         <!--DATE-->
                         <div class="input-box date-wrapper">
-                            <input type="date" class="input-field" id="due-date" required>
+                            <input type="date" class="input-field" id="event-date">
 
                             <span class="date-tooltip">
                                 Please click the calendar icon to choose your date
                             </span>
                         </div>
 
-                        <!--STATUS-->
                         <div class="input-box">
-                            <select class="input-field" id="status" required>
-                                <option value="">Select Status</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Overdue">Overdue</option>
-                            </select>
-                        </div>
-
-
-                        <div class="input-box">
-                            <button type="submit" class="btn-submit" id="AddTask">Add Task <i class="ri-add-large-line"></i></button>
+                            <button type="submit" class="btn-submit" id="AddTask">Add Event <i class="ri-add-large-line"></i></button>
                         </div>
                     </form>
                 </div>
@@ -237,8 +153,8 @@
                         <i class="ri-delete-bin-line"></i>
                     </div>
 
-                    <h3>Delete Task?</h3>
-                    <p>This action cannot be undone. Do you want to continue?</p>
+                    <h3>Delete Event?</h3>
+                    <p>This action cannot be undone. Tasks linked to this event will also be deleted.</p>
 
                     <div class="confirm-actions">
                         <button id="cancelDelete" class="btn-cancel">Cancel</button>
@@ -264,7 +180,7 @@
 
                 </div>
             </div>
-            
+
         </main>
 
         <!--TOP OF THIRD SECTION-->
@@ -289,7 +205,7 @@
             </div>
 
             <!--UPCOMING DEADLINES-->
-            <div class="upcoming-deadlines"> <!--recent updates-->
+            <div class="upcoming-deadlines">
                 <h2><b>Upcoming Deadlines</b></h2>
                 <div class="deadlines">
                     <div class="deadline" id="upcomingDeadlinesList">
@@ -333,6 +249,6 @@
 
     </div>
 
-    <script type="module" src="js/taskboard.js"></script>
+    <script type="module" src="js/eventboard.js"></script>
 </body>
 </html>

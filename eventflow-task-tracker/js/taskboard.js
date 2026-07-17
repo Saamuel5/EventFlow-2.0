@@ -85,6 +85,21 @@ let taskIdToDelete = null;
 let editingTaskId = null; // Firestore doc id of the task being edited, or null when adding
 
 const tasksRef = collection(db, "tasks");
+const eventsRef = collection(db, "events");
+
+// Events belonging to the current user, keyed by Firestore doc id. Used to
+// populate the "Event" select in the task form and the event filter dropdown.
+let eventsCache = {};
+let unsubscribeEvents = null;
+
+const eventAreaSelect = document.getElementById("event-area");
+const eventFilterSelect = document.getElementById("eventFilterSelect");
+const activeEventBanner = document.getElementById("activeEventBanner");
+const activeEventName = document.getElementById("activeEventName");
+
+// If we arrived here via an event's "View Tasks" link, this holds that
+// event's id until the events/tasks listeners are ready to apply it.
+const eventIdFromUrl = new URLSearchParams(window.location.search).get("event");
 
 // ===============================
 // TABLE / KANBAN VIEW SWITCH
@@ -149,7 +164,9 @@ onAuthStateChanged(auth, (user) => {
     }
 
     if (unsubscribeTasks) unsubscribeTasks();
+    if (unsubscribeEvents) unsubscribeEvents();
     startTaskListener();
+    startEventListener();
 });
 
 
@@ -363,12 +380,26 @@ function sortTasksByDate() {
 
 
 // ===============================
+// RESOLVE A TASK'S EVENT ID (for filtering)
+// ===============================
+function resolveEventId(task) {
+    if (task.eventId) return task.eventId;
+
+    const normalized = (task.eventArea || "").trim().toLowerCase();
+    return Object.keys(eventsCache).find(
+        id => eventsCache[id].eventName?.trim().toLowerCase() === normalized
+    ) || "";
+}
+
+
+// ===============================
 // RENDER A SINGLE ROW
 // ===============================
 function buildRow(id, task) {
     const row = document.createElement("tr");
     row.dataset.id = id;
     row.setAttribute("data-status", task.status);
+    row.setAttribute("data-event", resolveEventId(task));
 
     row.innerHTML = `
         <td>${task.taskName}</td>
@@ -400,6 +431,7 @@ function buildKanbanCard(id, task) {
     card.dataset.id = id;
     card.dataset.due = task.dueDate;
     card.setAttribute("data-status", task.status);
+    card.setAttribute("data-event", resolveEventId(task));
     card.setAttribute("draggable", "true");
 
     const parsedDate = new Date(task.dueDate);
@@ -482,13 +514,90 @@ function startTaskListener() {
 
 
 // ===============================
+// LIVE SYNC OF EVENTS (SCOPED TO THE CURRENT USER)
+// ===============================
+// Tasks belong to a specific event, so both the "Event" select in the task
+// form and the event filter dropdown are built from this user's real events
+// rather than freeform text.
+function startEventListener() {
+
+    const myEventsQuery = query(eventsRef, where("userId", "==", currentUserId));
+
+    unsubscribeEvents = onSnapshot(myEventsQuery, (snapshot) => {
+
+        eventsCache = {};
+        snapshot.forEach((docSnap) => {
+            eventsCache[docSnap.id] = docSnap.data();
+        });
+
+        populateEventFormOptions();
+        populateEventFilterOptions();
+        applyEventFilterFromUrl();
+
+    }, (error) => {
+        console.error("Failed to load events:", error);
+    });
+}
+
+function populateEventFormOptions() {
+    const previousValue = eventAreaSelect.value;
+
+    const options = Object.keys(eventsCache).length === 0
+        ? `<option value="">No events yet - create one first</option>`
+        : `<option value="">Select Event</option>` +
+          Object.entries(eventsCache)
+              .map(([id, event]) => `<option value="${id}">${event.eventName}</option>`)
+              .join("");
+
+    eventAreaSelect.innerHTML = options;
+
+    // Keep whatever was already selected (e.g. while editing a task) if it
+    // still exists among the freshly loaded events
+    if (previousValue && eventsCache[previousValue]) {
+        eventAreaSelect.value = previousValue;
+    }
+}
+
+function populateEventFilterOptions() {
+    const previousValue = eventFilterSelect.value;
+
+    eventFilterSelect.innerHTML =
+        `<option value="All Events">All Events</option>` +
+        Object.entries(eventsCache)
+            .map(([id, event]) => `<option value="${id}">${event.eventName}</option>`)
+            .join("");
+
+    if (previousValue && (previousValue === "All Events" || eventsCache[previousValue])) {
+        eventFilterSelect.value = previousValue;
+    }
+}
+
+// Applies the ?event=<id> query param (set by an event's "View Tasks" link)
+// to the event filter dropdown and shows the "Showing tasks for ..." banner.
+function applyEventFilterFromUrl() {
+    if (!eventIdFromUrl || !eventsCache[eventIdFromUrl]) return;
+
+    eventFilterSelect.value = eventIdFromUrl;
+    activeEventName.textContent = eventsCache[eventIdFromUrl].eventName;
+    activeEventBanner.style.display = "flex";
+    filterTasks();
+}
+
+eventFilterSelect.addEventListener("change", () => {
+    activeEventBanner.style.display = "none";
+    filterTasks();
+});
+
+
+// ===============================
 // SUBMIT FORM (ADD / EDIT)
 // ===============================
 form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const taskName = document.getElementById("task-name").value;
-    const eventArea = document.getElementById("event-area").value;
+    const eventId = document.getElementById("event-area").value;
+    const eventArea = eventsCache[eventId]?.eventName || "";
     const dueDate = document.getElementById("due-date").value;
     const status = document.getElementById("status").value;
 
@@ -499,11 +608,11 @@ form.addEventListener("submit", async function (e) {
     try {
         if (editingTaskId) {
             // Don't touch userId on edit - the task should stay owned by whoever created it
-            const taskData = { taskName, eventArea, assignedTo: assignedText, dueDate, status };
+            const taskData = { taskName, eventId, eventArea, assignedTo: assignedText, dueDate, status };
             await updateDoc(doc(db, "tasks", editingTaskId), taskData);
             editingTaskId = null;
         } else {
-            const taskData = { taskName, eventArea, assignedTo: assignedText, dueDate, status, userId: currentUserId };
+            const taskData = { taskName, eventId, eventArea, assignedTo: assignedText, dueDate, status, userId: currentUserId };
             await addDoc(tasksRef, taskData);
         }
 
@@ -531,7 +640,15 @@ function openEditModal(id) {
     editingTaskId = id;
 
     document.getElementById("task-name").value = task.taskName;
-    document.getElementById("event-area").value = task.eventArea;
+
+    let matchedEventId = task.eventId || "";
+    if (!matchedEventId && task.eventArea) {
+        const normalized = task.eventArea.trim().toLowerCase();
+        matchedEventId = Object.keys(eventsCache).find(
+            id => eventsCache[id].eventName?.trim().toLowerCase() === normalized
+        ) || "";
+    }
+    document.getElementById("event-area").value = matchedEventId;
 
     assignedUsers = task.assignedTo ? task.assignedTo.split(", ").filter(Boolean) : [];
     renderAssignedUsers();
@@ -648,16 +765,18 @@ Object.values(kanbanColumns).forEach((column) => {
 function filterTasks() {
 
     const selectedFilter = taskFilter.value;
+    const selectedEvent = eventFilterSelect.value;
     const items = document.querySelectorAll("#taskTableBody tr, .kanban-card");
 
     items.forEach(item => {
 
         const status = item.getAttribute("data-status");
+        const eventId = item.getAttribute("data-event");
 
-        item.style.display =
-            selectedFilter === "All Tasks" || status === selectedFilter
-                ? ""
-                : "none";
+        const statusMatches = selectedFilter === "All Tasks" || status === selectedFilter;
+        const eventMatches = !selectedEvent || selectedEvent === "All Events" || eventId === selectedEvent;
+
+        item.style.display = statusMatches && eventMatches ? "" : "none";
     });
 }
 
