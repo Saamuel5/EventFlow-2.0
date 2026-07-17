@@ -67,6 +67,11 @@
                 <span id="current-date"></span>
             </div>
 
+            <div class="calendar-view-toggle">
+                <button type="button" id="viewTasksBtn" class="active">Tasks</button>
+                <button type="button" id="viewEventsBtn">Events</button>
+            </div>
+
             <!--CALENDAR CARD-->
             <div class="calendar-card">
 
@@ -108,6 +113,129 @@
                     </div>
 
                     <div id="dayTasksList" class="day-tasks-list"></div>
+                </div>
+            </div>
+
+            <!--EDIT TASK MODAL-->
+            <div class="modal" id="editTaskModal">
+                <div class="wrapper">
+                    <button class="close-modal" id="closeEditTaskModal">
+                        <i class="ri-close-line"></i>
+                    </button>
+
+                    <div class="form-header">
+                        <div class="titles">
+                            <div class="title-add-tasks">Edit Task</div>
+                        </div>
+                    </div>
+
+                    <form class="add-task-form" id="editTaskForm" autocomplete="off">
+
+                        <div class="input-box">
+                            <input type="text" class="input-field" id="edit-task-name" placeholder=" " required>
+                            <label for="edit-task-name" class="label">Task Name</label>
+                            <i class="ri-file-list-line icon"></i>
+                        </div>
+
+                        <div class="input-box">
+                            <select class="input-field select-field" id="edit-task-event"></select>
+                            <i class="ri-calendar-event-line icon"></i>
+                        </div>
+
+                        <div class="input-box">
+                            <input type="text" class="input-field" id="edit-task-assigned" placeholder=" ">
+                            <label for="edit-task-assigned" class="label">Assigned To</label>
+                            <i class="ri-user-line icon"></i>
+                        </div>
+
+                        <div class="input-box">
+                            <select class="input-field select-field" id="edit-task-priority">
+                                <option value="Low">Low priority</option>
+                                <option value="Medium">Medium priority</option>
+                                <option value="High">High priority</option>
+                            </select>
+                            <i class="ri-flag-line icon"></i>
+                        </div>
+
+                        <div class="input-box">
+                            <select class="input-field select-field" id="edit-task-status">
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Overdue">Overdue</option>
+                            </select>
+                            <i class="ri-checkbox-circle-line icon"></i>
+                        </div>
+
+                        <div class="input-box date-wrapper">
+                            <input type="date" class="input-field" id="edit-task-due-date">
+                        </div>
+
+                        <div class="input-box">
+                            <button type="submit" class="btn-submit" id="saveTaskBtn">Save Changes <i class="ri-check-line"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!--EDIT EVENT MODAL-->
+            <div class="modal" id="editEventModal">
+                <div class="wrapper">
+                    <button class="close-modal" id="closeEditEventModal">
+                        <i class="ri-close-line"></i>
+                    </button>
+
+                    <div class="form-header">
+                        <div class="titles">
+                            <div class="title-add-tasks">Edit Event</div>
+                        </div>
+                    </div>
+
+                    <form class="add-task-form" id="editEventForm" autocomplete="off">
+
+                        <div class="input-box">
+                            <input type="text" class="input-field" id="edit-event-name" placeholder=" " required>
+                            <label for="edit-event-name" class="label">Event Name</label>
+                            <i class="ri-calendar-event-line icon"></i>
+                        </div>
+
+                        <div class="input-box">
+                            <input type="text" class="input-field" id="edit-event-description" placeholder=" ">
+                            <label for="edit-event-description" class="label">Description (optional)</label>
+                            <i class="ri-file-text-line icon"></i>
+                        </div>
+
+                        <div class="input-box">
+                            <input type="text" class="input-field" id="edit-event-location" placeholder=" ">
+                            <label for="edit-event-location" class="label">Location (optional)</label>
+                            <i class="ri-map-pin-line icon"></i>
+                        </div>
+
+                        <div class="input-box date-wrapper">
+                            <input type="date" class="input-field" id="edit-event-date">
+                        </div>
+
+                        <div class="input-box">
+                            <button type="submit" class="btn-submit" id="saveEventBtn">Save Changes <i class="ri-check-line"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="confirm-modal" id="deleteItemModal">
+                <div class="confirm-box">
+
+                    <div class="confirm-icon">
+                        <i class="ri-delete-bin-line"></i>
+                    </div>
+
+                    <h3 id="deleteItemTitle">Delete?</h3>
+                    <p id="deleteItemMessage">This action cannot be undone.</p>
+
+                    <div class="confirm-actions">
+                        <button id="cancelDeleteItem" class="btn-cancel">Cancel</button>
+                        <button id="confirmDeleteItem" class="btn-delete">Delete</button>
+                    </div>
+
                 </div>
             </div>
 

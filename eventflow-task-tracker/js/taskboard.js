@@ -304,8 +304,8 @@ function updateUpcomingDeadlines() {
 
         const taskName = row.cells[0].textContent;
         const eventArea = row.cells[1].textContent;
-        const assignedTo = row.cells[2].textContent;
-        const dueDate = new Date(row.cells[3].textContent);
+        const assignedTo = row.cells[3].textContent;
+        const dueDate = new Date(row.cells[4].textContent);
 
         const daysRemaining = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
 
@@ -372,7 +372,7 @@ function sortTasksByDate() {
     const rows = Array.from(tableBody.querySelectorAll("tr"));
 
     rows.sort((a, b) =>
-        new Date(a.cells[3].textContent) - new Date(b.cells[3].textContent)
+        new Date(a.cells[4].textContent) - new Date(b.cells[4].textContent)
     );
 
     rows.forEach(row => tableBody.appendChild(row));
