@@ -117,6 +117,7 @@
                             <tr>
                                 <th>Task</th>
                                 <th>Event</th>
+                                <th>Priority</th>
                                 <th>Assigned To</th>
                                 <th>Due Date</th>
                                 <th>Status</th>
@@ -179,7 +180,7 @@
                         
                         <!--TASK NAME-->
                         <div class="input-box">
-                            <input type="text" class="input-field" id="task-name" required>
+                            <input type="text" class="input-field" id="task-name" placeholder=" " required>
                             <label for="task-name" class="label">Task Name</label>
                             <i class="ri-todo-line icon"></i>
                         </div>
@@ -223,6 +224,15 @@
                             </select>
                         </div>
 
+                        <!--PRIORITY-->
+                        <div class="input-box">
+                            <select class="input-field" id="priority" required>
+                                <option value="">Select Priority</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
 
                         <div class="input-box">
                             <button type="submit" class="btn-submit" id="AddTask">Add Task <i class="ri-add-large-line"></i></button>

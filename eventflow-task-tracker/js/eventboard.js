@@ -312,7 +312,10 @@ function buildEventCard(id, event) {
         : `<div class="event-tasks-list">
             ${linkedTasks.map(t => `
                 <div class="event-task-item">
-                    <span class="event-task-name">${t.taskName}</span>
+                    <span class="event-task-name">
+                        <span class="priority-dot priority-dot-${(t.priority || "medium").toLowerCase()}" title="${t.priority || "Medium"} priority"></span>
+                        ${t.taskName}
+                    </span>
                     <span class="status ${t.status.toLowerCase().replace(/\s/g, '-')}">
                         <i class="ri-circle-fill status-icon"></i>${t.status}
                     </span>
