@@ -70,8 +70,8 @@ The project is divided into three iterations. Each iteration delivers a working 
 | Iteration   | User Stories | Focus                                                                       |
 | ----------- | ------------ | --------------------------------------------------------------------------- |
 | Iteration 1 | US1–US6      | Core system: Login, Register, Create, View, Edit, and Delete tasks          |
-| Iteration 2 | US7–US12     | Enhancements: Status, Filtering, Dashboard, Priority, and Firebase Database |
-| Iteration 3 | US13–US15    | Advanced features: Kanban Board, Calendar View, and Form Validation         |
+| Iteration 2 | US7–US12     | Enhancements: Status, Filtering, Dashboard, Priority |
+| Iteration 3 | US13–US15    | Advanced features: Kanban Board, Calendar View, and Form Validation and Firebase Database      |
 
 **Total Story Points: 89**
 
@@ -242,25 +242,25 @@ Complete EventFlow 2.0 by introducing a Kanban board, calendar view, deadline hi
 
 | Task                                               | Assignee                    | Status      | Estimated Hours | Actual Hours |
 | -------------------------------------------------- | --------------------------- | ----------- | --------------: | -----------: |
-| Create GitHub issues for Sprint 3 features         | Saamuel Kolandasamy         | ✅ Completed |          1 hour |       1 hour |
-| Create the Sprint 3 milestone                      | Saamuel Kolandasamy         | ✅ Completed |          1 hour |       1 hour |
-| Update the README with final project documentation | Saamuel Kolandasamy         | ✅ Completed |         2 hours |      2 hours |
-| Create the Kanban board interface                  | Shanjana De Lerra Mahendran | ✅ Completed |         4 hours |      4 hours |
-| Add To Do, In Progress, and Done columns           | Shanjana De Lerra Mahendran | ✅ Completed |         2 hours |      2 hours |
-| Implement movement of tasks between Kanban columns | Shanjana De Lerra Mahendran | ✅ Completed |         4 hours |    4.5 hours |
-| Create the calendar view interface                 | Shanjana De Lerra Mahendran | ✅ Completed |         4 hours |      4 hours |
-| Display tasks according to their due dates         | Shanjana De Lerra Mahendran | ✅ Completed |         3 hours |      3 hours |
-| Highlight overdue tasks in red                     | Shanjana De Lerra Mahendran | ✅ Completed |       1.5 hours |    1.5 hours |
-| Improve validation for task forms                  | Shanjana De Lerra Mahendran | ✅ Completed |       2.5 hours |    2.5 hours |
-| Add clear validation error messages                | Shanjana De Lerra Mahendran | ✅ Completed |       1.5 hours |    1.5 hours |
-| Prevent empty task submissions                     | Shanjana De Lerra Mahendran | ✅ Completed |          1 hour |       1 hour |
-| Review the acceptance criteria for US13 to US15    | Tharany A/P Jayakumar       | ✅ Completed |         2 hours |      2 hours |
-| Test the Kanban board and calendar view            | Tharany A/P Jayakumar       | ✅ Completed |         2 hours |      2 hours |
-| Test form validation and error messages            | Tharany A/P Jayakumar       | ✅ Completed |       1.5 hours |    1.5 hours |
-| Prepare the Sprint 3 stand-up meeting summaries    | Tharany A/P Jayakumar       | ✅ Completed |       1.5 hours |    1.5 hours |
-| Conduct the final product review and approval      | Tharany A/P Jayakumar       | ✅ Completed |         2 hours |      2 hours |
-| Conduct the final GitHub and code review           | Saamuel Kolandasamy         | ✅ Completed |         2 hours |      2 hours |
-| Create the final release tag                       | Saamuel Kolandasamy         | ✅ Completed |       1.5 hours |    1.5 hours |
+| Create GitHub issues for Sprint 3 features         | Saamuel Kolandasamy         | Incomplete |          1 hour |       1 hour |
+| Create the Sprint 3 milestone                      | Saamuel Kolandasamy         | Incomplete |          1 hour |       1 hour |
+| Update the README with final project documentation | Saamuel Kolandasamy         | Incomplete |         2 hours |      2 hours |
+| Create the Kanban board interface                  | Shanjana De Lerra Mahendran | Incomplete |         4 hours |      4 hours |
+| Add To Do, In Progress, and Done columns           | Shanjana De Lerra Mahendran | Incomplete |         2 hours |      2 hours |
+| Implement movement of tasks between Kanban columns | Shanjana De Lerra Mahendran | Incomplete |         4 hours |    4.5 hours |
+| Create the calendar view interface                 | Shanjana De Lerra Mahendran | Incomplete |         4 hours |      4 hours |
+| Display tasks according to their due dates         | Shanjana De Lerra Mahendran | Incomplete |         3 hours |      3 hours |
+| Highlight overdue tasks in red                     | Shanjana De Lerra Mahendran | Incomplete |       1.5 hours |    1.5 hours |
+| Improve validation for task forms                  | Shanjana De Lerra Mahendran | Incomplete |       2.5 hours |    2.5 hours |
+| Add clear validation error messages                | Shanjana De Lerra Mahendran | Incomplete |       1.5 hours |    1.5 hours |
+| Prevent empty task submissions                     | Shanjana De Lerra Mahendran | Incomplete |          1 hour |       1 hour |
+| Review the acceptance criteria for US13 to US15    | Tharany A/P Jayakumar       | Incomplete |         2 hours |      2 hours |
+| Test the Kanban board and calendar view            | Tharany A/P Jayakumar       | Incomplete |         2 hours |      2 hours |
+| Test form validation and error messages            | Tharany A/P Jayakumar       | Incomplete |       1.5 hours |    1.5 hours |
+| Prepare the Sprint 3 stand-up meeting summaries    | Tharany A/P Jayakumar       | Incomplete |       1.5 hours |    1.5 hours |
+| Conduct the final product review and approval      | Tharany A/P Jayakumar       | Incomplete |         2 hours |      2 hours |
+| Conduct the final GitHub and code review           | Saamuel Kolandasamy         | Incomplete |         2 hours |      2 hours |
+| Create the final release tag                       | Saamuel Kolandasamy         | Incomplete |       1.5 hours |    1.5 hours |
 
 ### Definition of Done — Sprint 3
 
@@ -299,7 +299,7 @@ This development approach allows the team to complete the application step by st
 | --------------------------- | ------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | Tharany A/P Jayakumar       | Product Owner | Define user stories, prioritise backlog, and review core features               | Review US11 and US12 acceptance criteria, test database persistence, and prepare stand-up summaries | Review US13 to US15, test Kanban, calendar, and validation, and approve the final product          |
 | Shanjana De Lerra Mahendran | Developer     | Review login, registration, and task management features                        | Implement Firebase integration, CRUD operations, task priority, colour labels, and priority sorting | Implement Kanban board, calendar view, overdue highlighting, and form validation                   |
-| Saamuel Kolandasamy         | Scrum Master  | Set up repository, transfer files, create Project Board, milestones, and labels | Create issues and milestone, update README, and support GitHub management                           | Create issues and milestone, review GitHub activity, update documentation, and create release tags |
+| Saamuel Kolandasamy         | Scrum Master  | Set up repository, transfer files, create Project Board, milestones, and labels | Create issues and milestone, update README, and support GitHub management                           | Set up final repository, Create issues and milestone, review GitHub activity, update documentation, and create release tags |
 
 ---
 
@@ -432,11 +432,11 @@ Once the feature passes testing and meets its acceptance criteria, it is moved t
 
 # Project Milestones
 
-| Milestone                           | Related User Stories | Description                                                                                   |
-| ----------------------------------- | -------------------- | --------------------------------------------------------------------------------------------- |
-| Iteration 1 – Core System           | US1–US6              | Integration of registration, login, create, view, edit, and delete task features              |
-| Iteration 2 – Priority and Database | US7–US12             | Task status, filtering, dashboard improvements, priority management, and Firebase integration |
-| Iteration 3 – Advanced Features     | US13–US15            | Kanban board, calendar view, deadline highlighting, and improved validation                   |
+| Milestone                            | Related User Stories | Description                                                                                                            |
+| ------------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Iteration 1 – Minimum Viable Product | US1–US6              | Includes login, registration, task creation, task viewing, task editing, and task deletion                             |
+| Iteration 2 – Feature Enhancement    | US7–US12             | Includes task status, task filtering, upcoming deadlines, dark/light mode, and logout functionality                    |
+| Iteration 3 – Advanced Features      | US13–US15            | Includes dashboard, task priority, Firebase database integration, Kanban board, calendar view, and improved validation |
 
 ---
 
@@ -447,8 +447,8 @@ The project uses release tags to show the completed working version for each ite
 | Release Tag       | Description                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------- |
 | `v1.0-iteration1` | Core EventFlow features transferred and integrated into the final project           |
-| `v2.0-iteration2` | Task priority and Firebase database features completed                              |
-| `v3.0-final`      | Kanban board, calendar view, validation, testing, and final documentation completed |
+| `v2.0-iteration2` | task status, task filtering, upcoming deadlines, dark/light mode, and logout functionality|
+| `v3.0-final`      | Kanban board, calendar view, validation, testing, task priority, firebase database features completed and final documentation completed |
 
 ---
 
