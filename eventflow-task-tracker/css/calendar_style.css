@@ -21,11 +21,12 @@
     --color-primary-variant: #111e88;
     --color-dark-variant: #677483;
     --color-background: #f6f6f9;
+    --color-words: #682cc9;
 
     /*OLD COLORS*/
     --first-color: hsl(263, 64%, 48%);
     --title-color: hsl(228, 18%, 16%);
-    --text-color: hsl(228, 8%, 56%);
+    --text-color: hsla(0, 0%, 60%, 0.171);
     --body-color: hsl(228, 100%, 99%);
     --shadow-color: hsla(228, 80%, 4%, .1);
 
@@ -1301,7 +1302,7 @@ main .calendar-day .event-chip{
     top: 0;
     font-size: 14px;
     background-color: var(--color-white);
-    color: var(--color-word);
+    color: var(--color-words);
     padding: 0 10px;
 }
 

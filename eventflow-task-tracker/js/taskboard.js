@@ -1,5 +1,13 @@
 import { db, auth } from "./firebase-config.js";
-import { isTaskOverdue } from "./task-utils.js";
+import { isTaskOverdue, syncOverdueTasks } from "./task-utils.js";
+
+// A task's stored `status` is only set manually (on create/edit), so a task
+// saved as "In Progress" doesn't automatically become "Overdue" just because
+// its due date passes. Everywhere we display or group by status, we need to
+// show the *effective* status instead of trusting the raw stored value.
+function getEffectiveStatus(task) {
+    return isTaskOverdue(task) ? "Overdue" : task.status;
+}
 import {
     onAuthStateChanged,
     signOut
@@ -371,7 +379,7 @@ function updateUpcomingDeadlines() {
         const task = tasksCache[row.dataset.id];
         if (!task) return;
 
-        const taskName = row.cells[0].textContent;
+        const taskName = row.querySelector(".task-name-text")?.textContent || row.cells[0].textContent;
         const eventArea = row.cells[1].textContent;
         const assignedTo = row.cells[3].textContent;
         const dueDate = new Date(task.dueDate);
@@ -470,7 +478,8 @@ function resolveEventId(task) {
 function buildRow(id, task) {
     const row = document.createElement("tr");
     row.dataset.id = id;
-    row.setAttribute("data-status", task.status);
+    const effectiveStatus = getEffectiveStatus(task);
+    row.setAttribute("data-status", effectiveStatus);
     row.setAttribute("data-event", resolveEventId(task));
     row.setAttribute("data-priority", task.priority || "Medium");
 
@@ -488,9 +497,9 @@ function buildRow(id, task) {
         <td>${task.assignedTo}</td>
         <td>${formatDateDMY(task.dueDate)}</td>
         <td>
-            <span class="status ${task.status.toLowerCase().replace(/\s/g, '-')}">
+            <span class="status ${effectiveStatus.toLowerCase().replace(/\s/g, '-')}">
                 <i class="ri-circle-fill status-icon"></i>
-                ${task.status}
+                ${effectiveStatus}
             </span>
         </td>
         <td class="actions-cell">
@@ -513,7 +522,7 @@ function buildKanbanCard(id, task) {
     card.classList.add("kanban-card");
     card.dataset.id = id;
     card.dataset.due = task.dueDate;
-    card.setAttribute("data-status", task.status);
+    card.setAttribute("data-status", getEffectiveStatus(task));
     card.setAttribute("data-event", resolveEventId(task));
     card.setAttribute("data-priority", task.priority || "Medium");
     card.setAttribute("draggable", "true");
@@ -569,6 +578,8 @@ function startTaskListener() {
 
     unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
 
+        syncOverdueTasks(db, snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+
         tableBody.innerHTML = "";
         Object.values(kanbanColumns).forEach((column) => (column.innerHTML = ""));
         tasksCache = {};
@@ -581,7 +592,7 @@ function startTaskListener() {
             tableBody.appendChild(row);
 
             const card = buildKanbanCard(docSnap.id, task);
-            const column = kanbanColumns[task.status];
+            const column = kanbanColumns[getEffectiveStatus(task)];
             if (column) column.appendChild(card);
         });
 

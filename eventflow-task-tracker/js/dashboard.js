@@ -1,5 +1,22 @@
 import { db, auth } from "./firebase-config.js";
-import { isTaskOverdue, getOverdueTasks } from "./task-utils.js";
+import { isTaskOverdue, getOverdueTasks, syncOverdueTasks } from "./task-utils.js";
+
+// A task's stored `status` is only set manually (on create/edit), so a task
+// saved as "In Progress" doesn't automatically become "Overdue" just because
+// its due date passes. Mirrors taskboard.js so the Recent Tasks table always
+// agrees with the Tasks page.
+function getEffectiveStatus(task) {
+    return isTaskOverdue(task) ? "Overdue" : task.status;
+}
+
+// Format an ISO "YYYY-MM-DD" date string as "DD/MM/YYYY", matching
+// how the Tasks page displays due dates.
+function formatDateDMY(dateStr) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    if (!year || !month || !day) return dateStr;
+    return `${day}/${month}/${year}`;
+}
 import {
     onAuthStateChanged,
     signOut
@@ -247,17 +264,27 @@ function updateRecentTasks(tasks) {
     recent.forEach(task => {
         const row = document.createElement("tr");
 
-        const statusClass = task.status === "Completed" ? "success"
-            : task.status === "Overdue" ? "danger"
-            : "warning";
+        const effectiveStatus = getEffectiveStatus(task);
+        const statusClass = effectiveStatus.toLowerCase().replace(/\s/g, "-");
+        const priority = task.priority || "Medium";
 
         row.innerHTML = `
-            <td>${task.taskName}</td>
+            <td>
+                <div class="task-name-cell">
+                    <span class="task-name-text">${task.taskName}</span>
+                    ${task.description ? `<span class="task-desc-text" title="${task.description.replace(/"/g, "&quot;")}">${task.description}</span>` : ""}
+                </div>
+            </td>
             <td>${task.eventArea}</td>
+            <td><span class="priority-badge priority-${priority.toLowerCase()}">${priority}</span></td>
             <td>${task.assignedTo}</td>
-            <td>${task.dueDate}</td>
-            <td class="${statusClass}">${task.status}</td>
-            <td><a href="taskboard.html" class="primary">Details</a></td>
+            <td>${formatDateDMY(task.dueDate)}</td>
+            <td>
+                <span class="status ${statusClass}">
+                    <i class="ri-circle-fill status-icon"></i>
+                    ${effectiveStatus}
+                </span>
+            </td>
         `;
 
         recentTasksBody.appendChild(row);
@@ -323,6 +350,8 @@ function startTaskListener() {
     const myTasksQuery = query(tasksRef, where("userId", "==", currentUserId));
 
     unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
+
+        syncOverdueTasks(db, snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
 
         const tasks = snapshot.docs.map(docSnap => docSnap.data());
 
