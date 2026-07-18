@@ -112,6 +112,9 @@ const eventFilterSelect = document.getElementById("eventFilterSelect");
 const activeEventBanner = document.getElementById("activeEventBanner");
 const activeEventName = document.getElementById("activeEventName");
 
+const assignedFilterSelect = document.getElementById("assignedFilterSelect");
+const priorityFilterSelect = document.getElementById("priorityFilterSelect");
+
 // If we arrived here via an event's "View Tasks" link, this holds that
 // event's id until the events/tasks listeners are ready to apply it.
 const eventIdFromUrl = new URLSearchParams(window.location.search).get("event");
@@ -459,6 +462,7 @@ function buildRow(id, task) {
     row.dataset.id = id;
     row.setAttribute("data-status", task.status);
     row.setAttribute("data-event", resolveEventId(task));
+    row.setAttribute("data-priority", task.priority || "Medium");
 
     const priority = task.priority || "Medium";
 
@@ -496,6 +500,7 @@ function buildKanbanCard(id, task) {
     card.dataset.due = task.dueDate;
     card.setAttribute("data-status", task.status);
     card.setAttribute("data-event", resolveEventId(task));
+    card.setAttribute("data-priority", task.priority || "Medium");
     card.setAttribute("draggable", "true");
 
     const formattedDate = formatDateDMY(task.dueDate);
@@ -569,11 +574,41 @@ function startTaskListener() {
         updateKanbanCounts();
         updateUpcomingDeadlines();
         updateTaskOverview();
+        populateAssignedFilterOptions();
         filterTasks();
 
     }, (error) => {
         console.error("Failed to load tasks:", error);
     });
+}
+
+// ===============================
+// ASSIGNED FILTER OPTIONS
+// ===============================
+// Assignees aren't a fixed list (a task's assignedTo can be several people),
+// so this rebuilds the dropdown from whoever is actually assigned across
+// the current user's tasks, rather than a hardcoded list.
+function populateAssignedFilterOptions() {
+    const previousValue = assignedFilterSelect.value;
+
+    const allAssignees = new Set();
+    Object.values(tasksCache).forEach((task) => {
+        (task.assignedTo || "")
+            .split(",")
+            .map((name) => name.trim())
+            .filter(Boolean)
+            .forEach((name) => allAssignees.add(name));
+    });
+
+    const sortedAssignees = Array.from(allAssignees).sort((a, b) => a.localeCompare(b));
+
+    assignedFilterSelect.innerHTML =
+        `<option value="All Users">All Users</option>` +
+        sortedAssignees.map((name) => `<option value="${name}">${name}</option>`).join("");
+
+    if (previousValue && (previousValue === "All Users" || allAssignees.has(previousValue))) {
+        assignedFilterSelect.value = previousValue;
+    }
 }
 
 
@@ -900,23 +935,32 @@ function filterTasks() {
 
     const selectedFilter = taskFilter.value;
     const selectedEvent = eventFilterSelect.value;
+    const selectedAssignee = assignedFilterSelect.value;
+    const selectedPriority = priorityFilterSelect.value;
     const items = document.querySelectorAll("#taskTableBody tr, .kanban-card");
 
     items.forEach(item => {
 
         const status = item.getAttribute("data-status");
         const eventId = item.getAttribute("data-event");
+        const priority = item.getAttribute("data-priority");
         const task = tasksCache[item.dataset.id];
+
+        const assignees = (task?.assignedTo || "").split(",").map((name) => name.trim());
 
         const statusMatches = selectedFilter === "All Tasks"
             || (selectedFilter === "Overdue" ? isTaskOverdue(task) : status === selectedFilter);
         const eventMatches = !selectedEvent || selectedEvent === "All Events" || eventId === selectedEvent;
+        const assigneeMatches = selectedAssignee === "All Users" || assignees.includes(selectedAssignee);
+        const priorityMatches = selectedPriority === "All Priorities" || priority === selectedPriority;
 
-        item.style.display = statusMatches && eventMatches ? "" : "none";
+        item.style.display = statusMatches && eventMatches && assigneeMatches && priorityMatches ? "" : "none";
     });
 }
 
 taskFilter.addEventListener("change", filterTasks);
+assignedFilterSelect.addEventListener("change", filterTasks);
+priorityFilterSelect.addEventListener("change", filterTasks);
 
 // ===============================
 // LOGOUT MODAL
