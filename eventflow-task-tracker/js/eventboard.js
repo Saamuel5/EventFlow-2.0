@@ -1,4 +1,5 @@
 import { db, auth } from "./firebase-config.js";
+import { isTaskOverdue, getOverdueTasks, syncOverdueTasks } from "./task-utils.js";
 import {
     onAuthStateChanged,
     signOut
@@ -195,8 +196,8 @@ function updateTaskOverview() {
 
     allTasks.forEach(task => {
         if (task.status === "Completed") completed++;
+        else if (isTaskOverdue(task)) overdue++;
         else if (task.status === "In Progress") inProgress++;
-        else if (task.status === "Overdue") overdue++;
     });
 
     const total = completed + inProgress + overdue;
@@ -286,8 +287,8 @@ function buildEventCard(id, event) {
     let completed = 0, inProgress = 0, overdue = 0;
     linkedTasks.forEach(t => {
         if (t.status === "Completed") completed++;
+        else if (isTaskOverdue(t)) overdue++;
         else if (t.status === "In Progress") inProgress++;
-        else if (t.status === "Overdue") overdue++;
     });
 
     const total = linkedTasks.length;
@@ -423,6 +424,8 @@ function startTaskListener() {
     const myTasksQuery = query(tasksRef, where("userId", "==", currentUserId));
 
     unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
+
+        syncOverdueTasks(db, snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
 
         tasksCache = {};
         snapshot.forEach((docSnap) => {

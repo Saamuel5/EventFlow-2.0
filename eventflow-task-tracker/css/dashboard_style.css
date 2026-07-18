@@ -161,6 +161,57 @@ b{
     color: var(--color-warning);
 }
 
+/* STATUS PILL (matches taskboard's status display) */
+.status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-weight: 600;
+}
+
+.status-icon {
+    font-size: 0.8rem;
+}
+
+.status.completed {
+    color: var(--color-success);
+}
+
+.status.in-progress {
+    color: var(--color-warning);
+}
+
+.status.overdue {
+    color: var(--color-danger);
+}
+
+/* PRIORITY BADGE (matches taskboard's) */
+.priority-badge{
+    display: inline-block;
+    padding: 0.15rem 0.65rem;
+    border-radius: 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.priority-low{
+    background: rgba(65, 241, 182, 0.15);
+    color: var(--color-success);
+}
+
+.priority-medium{
+    background: rgba(255, 187, 85, 0.15);
+    color: var(--color-warning);
+}
+
+.priority-high{
+    background: rgba(255, 119, 130, 0.15);
+    color: var(--color-danger);
+}
+
 
 
 /*SIDEBAR CSS*/
@@ -472,6 +523,77 @@ main .insights small{
 /*TABLE CSS*/
 main .recent-tasks{
     margin-top: 2rem;
+}
+
+/* Let the table scroll sideways on narrow screens instead of squeezing
+   every column until the text wraps and everything feels cramped */
+main .table-view{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+main .recent-tasks table{
+    min-width: 620px;
+    table-layout: fixed;
+}
+
+/* Column widths: Task / Event / Priority / Assigned To / Due Date / Status */
+.table-view table thead th:nth-child(1),
+.table-view table tbody td:nth-child(1){ width: 28%; }
+
+.table-view table thead th:nth-child(2),
+.table-view table tbody td:nth-child(2){ width: 15%; }
+
+.table-view table thead th:nth-child(3),
+.table-view table tbody td:nth-child(3){ width: 12%; }
+
+.table-view table thead th:nth-child(4),
+.table-view table tbody td:nth-child(4){ width: 15%; }
+
+.table-view table thead th:nth-child(5),
+.table-view table tbody td:nth-child(5){ width: 14%; }
+
+.table-view table thead th:nth-child(6),
+.table-view table tbody td:nth-child(6){ width: 16%; }
+
+/* Task column reads left-to-right instead of centered like the rest */
+.table-view table thead th:nth-child(1),
+.table-view table tbody td:nth-child(1){
+    text-align: left;
+}
+
+/* Long task names wrap onto multiple lines instead of stretching the column */
+.table-view table tbody td:nth-child(1){
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.7;
+    padding: 0.85rem 0.5rem 0.85rem 1.2rem;
+    height: auto;
+}
+
+/* Task name + description stacked in the first column */
+.task-name-cell{
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.task-name-text{
+    color: var(--color-dark-variant);
+}
+
+.task-desc-text{
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--color-info-dark);
+    opacity: 0.75;
+    font-weight: 400;
 }
 
 main .recent-tasks h2{

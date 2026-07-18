@@ -1,4 +1,5 @@
 import { db, auth } from "./firebase-config.js";
+import { isTaskOverdue, getOverdueTasks, syncOverdueTasks } from "./task-utils.js";
 import {
     onAuthStateChanged,
     signOut
@@ -170,13 +171,16 @@ let itemToDeleteId = null;
 
 const tasksRef = collection(db, "tasks");
 const eventsRef = collection(db, "events");
+const teamRef = collection(db, "teamMembers");
 
 let currentUserId = null;
 let unsubscribeTasks = null;  // stops the previous listener when we switch users
 let unsubscribeEvents = null;
+let unsubscribeTeam = null;   // stops the previous listener when we switch users
 
 let allTasks = [];          // the current user's tasks, refreshed live from Firestore
 let allEvents = [];         // the current user's events, refreshed live from Firestore
+let teamCache = {};         // the current user's team members, refreshed live from Firestore
 let viewDate = new Date();  // which month is currently showing on the calendar
 let currentView = "tasks";  // "tasks" or "events" - which data the calendar currently shows
 
@@ -201,8 +205,10 @@ onAuthStateChanged(auth, (user) => {
 
     if (unsubscribeTasks) unsubscribeTasks();
     if (unsubscribeEvents) unsubscribeEvents();
+    if (unsubscribeTeam) unsubscribeTeam();
     startTaskListener();
     startEventListener();
+    startTeamListener();
 });
 
 
@@ -216,6 +222,7 @@ function startTaskListener() {
     unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
 
         allTasks = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+        syncOverdueTasks(db, allTasks);
 
         renderCalendar();
         updateUpcomingDeadlines();
@@ -239,6 +246,26 @@ function startEventListener() {
 
     }, (error) => {
         console.error("Failed to load events:", error);
+    });
+}
+
+// The "Assigned To" select in the edit-task form is built from the people
+// added on the Team page, instead of a fixed list of names.
+function startTeamListener() {
+
+    const myTeamQuery = query(teamRef, where("userId", "==", currentUserId));
+
+    unsubscribeTeam = onSnapshot(myTeamQuery, (snapshot) => {
+
+        teamCache = {};
+        snapshot.forEach((docSnap) => {
+            teamCache[docSnap.id] = docSnap.data();
+        });
+
+        populateEditTaskAssignedOptions();
+
+    }, (error) => {
+        console.error("Failed to load team members:", error);
     });
 }
 
@@ -530,6 +557,15 @@ function populateEditTaskEventOptions() {
     ).join("");
 }
 
+function populateEditTaskAssignedOptions() {
+    const members = Object.values(teamCache).sort((a, b) => a.name.localeCompare(b.name));
+
+    editTaskAssignedSelect.innerHTML = members.length === 0
+        ? `<option value="">No team members yet - add one on the Team page</option>`
+        : `<option value="">Select User</option>` +
+          members.map((member) => `<option value="${member.name}">${member.name}</option>`).join("");
+}
+
 function openEditTaskModal(taskId) {
     const task = allTasks.find(t => t.id === taskId);
     if (!task) return;
@@ -807,8 +843,8 @@ function updateUpcomingDeadlines() {
 function updateTaskOverview() {
 
     const completed = allTasks.filter(t => t.status === "Completed").length;
-    const inProgress = allTasks.filter(t => t.status === "In Progress").length;
-    const overdue = allTasks.filter(t => t.status === "Overdue").length;
+    const overdue = getOverdueTasks(allTasks).length;
+    const inProgress = allTasks.filter(t => t.status === "In Progress" && !isTaskOverdue(t)).length;
 
     const total = completed + inProgress + overdue;
     const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -841,6 +877,8 @@ cancelLogout.addEventListener("click", () => {
 confirmLogout.addEventListener("click", async () => {
     try {
         if (unsubscribeTasks) unsubscribeTasks();
+        if (unsubscribeEvents) unsubscribeEvents();
+        if (unsubscribeTeam) unsubscribeTeam();
         await signOut(auth);
     } finally {
         window.location.href = "index.html";
