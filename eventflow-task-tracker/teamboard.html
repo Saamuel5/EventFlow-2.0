@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css">
 
     <!--CSS-->
-    <link rel="stylesheet" href="css/eventboard_style.css">
+    <link rel="stylesheet" href="css/teamboard_style.css">
 
-    <title>Events</title>
+    <title>Team</title>
 
     <!--APPLY SAVED THEME BEFORE THE PAGE PAINTS (prevents a light-mode flash)-->
     <script>
@@ -39,7 +39,7 @@
                     <i class="ri-dashboard-fill"></i>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="eventboard.html" class="active">
+                <a href="eventboard.html">
                     <i class="ri-calendar-event-line"></i>
                     <h3>Events</h3>
                 </a>
@@ -51,7 +51,7 @@
                     <i class="ri-calendar-line"></i>
                     <h3>Calendar</h3>
                 </a>
-                <a href="teamboard.html">
+                <a href="teamboard.html" class="active">
                     <i class="ri-team-line"></i>
                     <h3>Team</h3>
                 </a>
@@ -64,42 +64,45 @@
 
         <!--MAIN SECTION-->
         <main>
-            <h1>Events</h1>
+            <h1>Team</h1>
 
             <div class="date">
                 <i class="ri-calendar-line"></i>
                 <span id="current-date"></span>
             </div>
 
-            <!-- EVENTS CARD -->
+            <!-- TEAM MEMBERS CARD -->
             <div class="recent-tasks">
 
-                <!-- HEADER (FILTER + BUTTON) -->
+                <!-- HEADER (BUTTON) -->
                 <div class="recent-tasks-header">
                     <div class="task-controls">
-
-                        <span class="filter-label">Filter:</span>
-                        <select class="task-filter" id="eventFilter">
-                            <option value="All Events">All Events</option>
-                            <option value="Upcoming">Upcoming</option>
-                            <option value="Past">Past</option>
-                            <option value="No Date">No Date</option>
-                        </select>
-
                         <button class="add-task-btn" id="openModal">
                             <i class="ri-add-line"></i>
-                            Add Event
+                            Add Person
                         </button>
-
                     </div>
                 </div>
 
-                <!-- EVENTS GRID -->
-                <div class="events-grid" id="eventsGrid"></div>
+                <!-- TABLE VIEW -->
+                <div class="people-table-view">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="peopleTableBody"></tbody>
+                    </table>
+                </div>
 
             </div>
 
-            <!--ADD EVENT FORM-->
+            <!--ADD PERSON FORM-->
             <div class="modal" id="taskModal">
                 <div class="wrapper">
                     <button class="close-modal" id="closeModal">
@@ -108,44 +111,35 @@
 
                     <div class="form-header">
                         <div class="titles">
-                            <div class="title-add-tasks" id="modalTitle">Add Event</div>
+                            <div class="title-add-tasks" id="modalTitle">Add Person</div>
                         </div>
                     </div>
 
-                    <form action="" class="add-task-form" autocomplete="off">
+                    <form action="" class="add-person-form" autocomplete="off">
 
-                        <!--EVENT NAME-->
+                        <!--NAME-->
                         <div class="input-box">
-                            <input type="text" class="input-field" id="event-name" placeholder=" " required>
-                            <label for="event-name" class="label">Event Name</label>
-                            <i class="ri-calendar-event-line icon"></i>
+                            <input type="text" class="input-field" id="person-name" placeholder=" " required>
+                            <label for="person-name" class="label">Full Name</label>
+                            <i class="ri-user-line icon"></i>
                         </div>
 
-                        <!--DESCRIPTION-->
+                        <!--EMAIL-->
                         <div class="input-box">
-                            <input type="text" class="input-field" id="event-description" placeholder=" ">
-                            <label for="event-description" class="label">Description (optional)</label>
-                            <i class="ri-file-text-line icon"></i>
+                            <input type="email" class="input-field" id="person-email" placeholder=" " required>
+                            <label for="person-email" class="label">Email</label>
+                            <i class="ri-mail-line icon"></i>
                         </div>
 
-                        <!--LOCATION-->
+                        <!--ROLE-->
                         <div class="input-box">
-                            <input type="text" class="input-field" id="event-location" placeholder=" ">
-                            <label for="event-location" class="label">Location (optional)</label>
-                            <i class="ri-map-pin-line icon"></i>
-                        </div>
-
-                        <!--DATE-->
-                        <div class="input-box date-wrapper">
-                            <input type="date" class="input-field" id="event-date">
-
-                            <span class="date-tooltip">
-                                Please click the calendar icon to choose your date
-                            </span>
+                            <input type="text" class="input-field" id="person-role" placeholder=" " required>
+                            <label for="person-role" class="label">Role / Title</label>
+                            <i class="ri-briefcase-line icon"></i>
                         </div>
 
                         <div class="input-box">
-                            <button type="submit" class="btn-submit" id="AddTask">Add Event <i class="ri-add-large-line"></i></button>
+                            <button type="submit" class="btn-submit" id="AddPerson">Add Person <i class="ri-add-large-line"></i></button>
                         </div>
                     </form>
                 </div>
@@ -157,12 +151,12 @@
                         <i class="ri-delete-bin-line"></i>
                     </div>
 
-                    <h3>Delete Event?</h3>
-                    <p>This action cannot be undone. Tasks linked to this event will also be deleted.</p>
+                    <h3>Remove Person?</h3>
+                    <p>This action cannot be undone. Do you want to continue?</p>
 
                     <div class="confirm-actions">
                         <button id="cancelDelete" class="btn-cancel">Cancel</button>
-                        <button id="confirmDelete" class="btn-delete">Delete</button>
+                        <button id="confirmDelete" class="btn-delete">Remove</button>
                     </div>
                 </div>
             </div>
@@ -248,11 +242,20 @@
                 </div>
             </div>
 
-        </div>
+            <!--TEAM OVERVIEW-->
+            <div class="upcoming-deadlines">
+                <h2><b>Team Overview</b></h2>
+                <div class="deadlines">
+                    <div class="deadline" id="teamOverviewList">
+                        <p class="text-muted">No team members yet.</p>
+                    </div>
+                </div>
+            </div>
 
+        </div>
 
     </div>
 
-    <script type="module" src="js/eventboard.js"></script>
+    <script type="module" src="js/teamboard.js"></script>
 </body>
 </html>

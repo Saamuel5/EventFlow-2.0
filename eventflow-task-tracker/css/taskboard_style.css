@@ -74,6 +74,12 @@
     --box-shadow: 0 2rem 3rem var(--color-light);
 }
 
+/*PROFILE PHOTO ICON - INVERT TO WHITE IN DARK MODE
+  (the default icon is a dark silhouette that disappears on the dark background)*/
+.dark-theme-variables .profile-photo img{
+    filter: invert(1) brightness(1.5);
+}
+
 *{
     margin: 0;
     padding: 0;
@@ -263,7 +269,7 @@ aside .sidebar a:last-child{
 
 aside .sidebar a.active{
     background: var(--color-light);
-    color: var(--color-words);
+    color: var(--color-primary);
     margin-left: 0;
 }
 
@@ -271,16 +277,16 @@ aside .sidebar a.active:before{
     content: '';
     width: 6px;
     height: 100%;
-    background: var(--color-words);
+    background: var(--color-primary);
 }
 
 aside .sidebar a.active i{
-    color: var(--color-words);
+    color: var(--color-primary);
     margin-left: calc(1rem - 3px);
 }
 
 aside .sidebar a.hover{
-    color: var(--color-words);
+    color: var(--color-primary);
 }
 
 aside .sidebar a:hover i{
@@ -289,7 +295,7 @@ aside .sidebar a:hover i{
 
 aside .sidebar a:hover{
     background: var(--color-light);
-    color: var(--color-words);
+    color: var(--color-primary);
     margin-left: 0;
 }
 
@@ -1404,7 +1410,7 @@ select option {
     }
 
     .wrapper {
-        height: 85vh;          /* Caps the height so it never runs off the screen edge */
+        max-height: 85vh;      /* Caps the height so it never runs off the screen edge */
         overflow-y: auto;       /* Enables scrolling ONLY when screen is short */
         padding-top: 100px;     /* Tucks the padding slightly for extra space */
     }

@@ -6,25 +6,30 @@
 
     /*COLORS*/
     --color-main:#991bdd;
-    --color-primary: hsl(263, 64%, 48%);
+    --color-primary: #682cc9;
     --color-primary-light: #f2eaff;
     --color-primary-light2: #eae0fc;
+    --color-primary-select: #eae0fc;
+    --color-words: 	#682cc9;
     --color-danger: #ff7782;
     --color-success: #41f1b6;
     --color-warning: #ffbb55;
     --color-white: #ffffff;
+    --color-white2: #ffffff;
     --color-info-dark: #7d8da1;
     --color-info-light: #dce1eb;
     --color-dark: #363949;
+    --color-dark-circle: #363949;
     --color-light: rgba(164, 132, 200, 0.26);
     --color-primary-variant: #111e88;
     --color-dark-variant: #677483;
     --color-background: #f6f6f9;
+    --color-black: #000000;
 
     /*OLD COLORS*/
     --first-color: hsl(263, 64%, 48%);
     --title-color: hsl(228, 18%, 16%);
-    --text-color: hsl(228, 8%, 56%);
+    --text-color: hsla(0, 0%, 60%, 0.171);
     --body-color: hsl(228, 100%, 99%);
     --shadow-color: hsla(228, 80%, 4%, .1);
 
@@ -53,6 +58,28 @@
     --z-fixed: 100;
 }
 
+/*DARK THEME*/
+.dark-theme-variables{
+    --color-background: #181a1e;
+    --color-primary-light: #181a1e;
+    --color-white: #202528;
+    --color-dark: #edeffd;
+    --color-dark-variant: #a3bdcc;
+    --color-info-dark: #edeffd;
+    --color-words: #edeffd;
+    --color-dark-circle: #181a1e;
+    --color-primary-light2: #181a1e;
+    --color-light: rgba(0, 0, 0, 0.4);
+    --color-black: #edeffd;
+    --box-shadow: 0 2rem 3rem var(--color-light);
+}
+
+/*PROFILE PHOTO ICON - INVERT TO WHITE IN DARK MODE
+  (the default icon is a dark silhouette that disappears on the dark background)*/
+.dark-theme-variables .profile-photo img{
+    filter: invert(1) brightness(1.5);
+}
+
 *{
     margin: 0;
     padding: 0;
@@ -78,6 +105,12 @@ body{
     user-select: none;
     overflow-x: hidden;
     color: var(--color-dark);
+}
+
+/* While any modal is open, the page itself shouldn't scroll - only the
+   modal's own .wrapper should (see .wrapper's overflow-y: auto above) */
+body:has(.modal.active, .confirm-modal.active){
+    overflow-y: hidden;
 }
 
 .container{
@@ -134,7 +167,7 @@ small{
 }
 
 p{
-    color: var(--color-black);
+    color: var(--color-dark-variant);
 }
 
 b{
@@ -266,11 +299,9 @@ aside .sidebar a:hover{
     margin-left: 0;
 }
 
-/*STATISTICS CSS*/
 main{
     margin-top: 1.4rem;
-    min-width: 0; /* lets this grid column shrink instead of forcing the whole
-                     .container (and the .right sidebar) past the viewport edge */
+    min-width: 0;
 }
 
 main .date{
@@ -285,188 +316,8 @@ main .date{
 }
 
 main .date i{
-    color: var(--color-primary);
+    color: var(--color-words);
     font-size: 1.1rem;
-}
-
-main .overdue-banner{
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    background: rgba(255, 119, 130, 0.12);
-    border: 1px solid var(--color-danger);
-    border-radius: var(--border-radius-2);
-    margin-top: 1.2rem;
-    padding: 1rem 1.4rem;
-}
-
-main .overdue-banner-icon{
-    font-size: 1.8rem;
-    color: var(--color-danger);
-    flex-shrink: 0;
-}
-
-main .overdue-banner-body{
-    flex: 1;
-    min-width: 0;
-}
-
-main .overdue-banner-body p{
-    font-weight: 600;
-    color: var(--color-dark);
-}
-
-main .overdue-banner-body p b{
-    color: var(--color-danger);
-}
-
-main .overdue-banner-list{
-    color: var(--color-dark-variant);
-    font-size: 0.85rem;
-    margin-top: 0.2rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-main .overdue-banner-link{
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    background: var(--color-danger);
-    color: var(--color-white);
-    padding: 0.6rem 1rem;
-    border-radius: var(--border-radius-1);
-    font-weight: 600;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-main .overdue-banner-link:hover{
-    opacity: 0.9;
-}
-
-main .insights{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.6rem;
-}
-
-main .insights > div{
-    background: var(--color-white);
-    padding: var(--card-padding);
-    border-radius: var(--card-border-radius);
-    margin-top: 1rem;
-    box-shadow: var(--box-shadow);
-    transition: all 300ms ease;
-}
-
-main .insights > div:hover{
-    box-shadow: none;
-}
-
-main .insights > div i{
-    background: var(--color-primary);
-    padding: 0.5rem;
-    border-radius: 50%;
-    color: var(--color-white);
-    font-size: 2rem;
-}
-
-main .insights > div.in-progress i{
-    background: var(--color-warning);
-}
-
-main .insights > div.completed i{
-    background: var(--color-success);
-}
-
-main .insights > div.overdue i{
-    background: var(--color-danger);
-}
-
-main .insights > div .middle{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-main .insights > div .middle .lef{
-    min-width: 0; /* allows the text side to shrink instead of forcing
-                     the card (and grid column) wider than available space */
-}
-
-main .insights h3{
-    margin: 1rem 0 0.6rem;
-    font-size: 1rem;
-}
-
-main .insights .progress{
-    position: relative;
-    width: 7rem;
-    height: 7rem;
-    border-radius: 50%;
-}
-
-main .insights svg{
-    width: 7rem;
-    height: 7rem
-}
-
-main .insights svg circle{
-    fill: none;
-    stroke-width: 14;
-    stroke-linecap: round;
-    /* Rotate so the ring starts drawing from the top (12 o'clock)
-       instead of the SVG default of 3 o'clock. This only rotates
-       reliably because the <svg> now has an explicit viewBox="0 0 112 112" -
-       without one, browsers disagree on what "center" means here. */
-    transform-origin: center;
-    transform: rotate(-90deg);
-    transition: stroke-dasharray 0.6s ease;
-}
-
-/* Pale background track showing the full ring, so a partial arc reads
-   as "part of a circle" instead of a floating sliver */
-main .insights svg circle.ring-track{
-    stroke: var(--color-info-light);
-}
-
-/* Each card's ring matches its icon color */
-main .insights .total-tasks svg circle:not(.ring-track){
-    stroke: var(--color-primary);
-}
-
-main .insights .in-progress svg circle:not(.ring-track){
-    stroke: var(--color-warning);
-}
-
-main .insights .completed svg circle:not(.ring-track){
-    stroke: var(--color-success);
-}
-
-main .insights .overdue svg circle:not(.ring-track){
-    stroke: var(--color-danger);
-}
-
-main .insights .progress .number{
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--color-dark);
-}
-
-main .insights small{
-    margin-top: 1.4rem;
-    display: block;
 }
 
 /*TABLE CSS*/
@@ -500,6 +351,10 @@ main .recent-tasks table thead th{
 }
 
 main .recent-tasks table{
+    font-size: 0.9rem;
+}
+
+main .recent-tasks table{
     border-collapse: separate;
     border-spacing: 0;
 }
@@ -526,7 +381,60 @@ main .recent-tasks a{
     text-align: center;
     display: block;
     margin: 1rem auto;
-    color: #ffffff;
+    color: var(--color-primary)
+}
+
+.action-buttons{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* NOTE: .actions-cell (the <td>) stays a plain table-cell on purpose —
+   applying display:flex directly to a <td> breaks table-layout:fixed's
+   column-width calculation for that column, causing it to collapse
+   instead of honoring the width rule below. The flex layout lives on
+   the .action-buttons <div> nested inside instead. */
+.actions-cell{
+    vertical-align: middle;
+}
+
+.edit-btn,
+.delete-btn{
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.edit-btn{
+    background: rgba(255, 187, 85, 0.15);
+    color: var(--color-warning);
+}
+
+.edit-btn:hover{
+    background: var(--color-warning);
+    color: white;
+}
+
+.delete-btn{
+    background: rgba(255, 119, 130, 0.15);
+    color: var(--color-danger);
+}
+
+.delete-btn:hover{
+    background: var(--color-danger);
+    color: white;
+}
+
+.edit-btn i,
+.delete-btn i{
+    font-size: 1.1rem;
 }
 
 /*RIGHT SIDE CSS*/
@@ -576,7 +484,7 @@ main .recent-tasks a{
     text-align: right;
 }
 
-/*UPCOMING DEADLINES*/
+/*RECENT UPDATES*/
 .right .upcoming-deadlines{
     margin-top: 1rem;
 }
@@ -602,6 +510,30 @@ main .recent-tasks a{
     grid-template-columns: auto;
     gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.deadline-item{
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.deadline-item p{
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+
+.deadline-item small{
+    color: var(--color-info-dark);
+}
+
+@keyframes fadeInUp{
+    from{
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* TASK OVERVIEW */
@@ -697,54 +629,275 @@ main .recent-tasks a{
     background: var(--color-danger);
 }
 
-/*DARK THEME*/
-.dark-theme-variables{
-    --color-background: #181a1e;
-    --color-primary-light: #181a1e;
-    --color-white: #202528;
-    --color-dark: #edeffd;
-    --color-dark-variant: #a3bdcc;
-    --color-info-dark: #edeffd;
-    --color-words: #edeffd;
-    --color-dark-circle: #181a1e;
-    --color-primary-light2: #181a1e;
-    --color-light: rgba(0, 0, 0, 0.4);
-    --color-black: #edeffd;
-    --box-shadow: 0 2rem 3rem var(--color-light);
+/*ADD TASKS*/
+/* right side controls container */
+.recent-tasks-header{
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
 }
 
-/*PROFILE PHOTO ICON - INVERT TO WHITE IN DARK MODE
-  (the default icon is a dark silhouette that disappears on the dark background)*/
-.dark-theme-variables .profile-photo img{
-    filter: invert(1) brightness(1.5);
+.task-controls{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-/*UPCOMING DEADLINE ITEM ANIMATION (dashboard.js renders these dynamically)*/
-.deadline-item{
-    animation: fadeInUp 0.4s ease forwards;
+/*ADD BUTTON*/
+
+.add-task-btn{
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-1);
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 300ms ease;
 }
 
-.deadline-item p{
-    margin-bottom: 0.3rem;
-    font-weight: 700;
+.add-task-btn:hover{
+    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
-.deadline-item small{
-    color: var(--color-info-dark);
+/*ADD TASK FORM*/
+.modal{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-@keyframes fadeInUp{
-    from{
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to{
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Show modal */
+.modal.active{
+    display: flex;
 }
 
-/*LOGOUT CONFIRM MODAL*/
+.wrapper{
+    position: relative;
+    width: 430px;
+    max-height: 85vh;
+    background-color: var(--color-white);
+    border-radius: 15px;
+    padding: 120px 32px 64px;
+    border: 1px solid var(--color-primary);
+    box-shadow: var(--box-shadow);
+    transition: 0.3s;
+    transform: scale(0.85);
+    opacity: 0;
+    animation: popIn 0.25s ease forwards;
+    overflow-y: auto;
+}
+
+.form-header{
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 70px;
+    background-color: var(--color-primary);
+    border-radius: 0 0 20px 20px;
+}
+
+.form-header::before, .form-header::after{
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.form-header::before{
+    left: -30px;
+    border-top-right-radius: 50%;
+    box-shadow: 15px 0 0 var(--color-primary);
+}
+
+.form-header::after{
+    right: -30px;
+    border-top-left-radius: 50%;
+    box-shadow: -15px 0 0 var(--color-primary);
+}
+
+.titles{
+    position: relative;
+}
+
+.title-add-tasks{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-white2);
+    font-size: 24px;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+
+.add-person-form{
+    position: relative;
+    margin: 0 auto;
+    width: 85%;
+    transition: 0.3s;
+}
+
+.input-box{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+}
+
+.input-field{
+    width: 100%;
+    height: 55px;
+    font-size: 16px;
+    background: transparent;
+    color: var(--color-black);
+    padding: 0 20px;
+    border: 1px solid var(--text-color);
+    border-radius: 30px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-field:focus{
+    border: 1px solid var(--color-words);
+}
+
+.label{
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    color: var(--color-dark);
+    font-size: 14px;
+    transition: 0.2s;
+    cursor: text;
+}
+
+.input-field:focus ~ .label,
+.input-field:not(:placeholder-shown) ~ .label{
+    top: 0;
+    font-size: 14px;
+    background-color: var(--color-white);
+    color: var(--color-word);
+    padding: 0 10px;
+}
+
+.icon{
+    position: absolute;
+    top: 50%;
+    right: 25px;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--color-dark);
+}
+
+/*TEAM PAGE - PEOPLE TABLE*/
+.people-table-view{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.people-table-view table{
+    min-width: 500px;
+    table-layout: fixed;
+}
+
+.people-table-view table thead th:nth-child(1),
+.people-table-view table tbody td:nth-child(1){
+    width: 30%;
+    text-align: left;
+}
+
+.people-table-view table thead th:nth-child(2),
+.people-table-view table tbody td:nth-child(2){ width: 32%; }
+
+.people-table-view table thead th:nth-child(3),
+.people-table-view table tbody td:nth-child(3){ width: 20%; }
+
+.people-table-view table thead th:nth-child(4),
+.people-table-view table tbody td:nth-child(4){ width: 18%; }
+
+.role-badge{
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    background: var(--color-primary-light2);
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/*SELECT DROPDOWN OPTIONS*/
+select option {
+    background-color: var(--color-white);
+    color: var(--color-dark);
+}
+
+.btn-submit{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 50px;
+    background-color: var(--color-primary);
+    color: var(--color-white2);
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-submit:hover{
+    gap: 15px;
+}
+
+.close-modal{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+
+    width: 35px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    color: var(--color-words);
+
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+.close-modal i{
+    font-size: 1.3rem;
+}
+
+.close-modal:hover{
+    background: var(--color-primary);
+    color: white;
+}
+
 .confirm-modal{
     display: none;
     position: fixed;
@@ -756,10 +909,12 @@ main .recent-tasks a{
     backdrop-filter: blur(4px);
 }
 
+/* show modal */
 .confirm-modal.active{
     display: flex;
 }
 
+/* CARD */
 .confirm-box{
     width: 320px;
     background: var(--color-white);
@@ -770,6 +925,7 @@ main .recent-tasks a{
     animation: popIn 0.25s ease;
 }
 
+/* ICON */
 .confirm-icon{
     width: 60px;
     height: 60px;
@@ -783,24 +939,28 @@ main .recent-tasks a{
     font-size: 1.6rem;
 }
 
+/* TITLE */
 .confirm-box h3{
     margin-bottom: 0.5rem;
     font-size: 1.2rem;
     color: var(--color-dark);
 }
 
+/* TEXT */
 .confirm-box p{
     font-size: 0.9rem;
     color: var(--color-dark-variant);
     margin-bottom: 1.5rem;
 }
 
+/* BUTTONS */
 .confirm-actions{
     display: flex;
     justify-content: center;
     gap: 1rem;
 }
 
+/* CANCEL BUTTON */
 .btn-cancel{
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -815,6 +975,7 @@ main .recent-tasks a{
     color: var(--color-dark-circle);
 }
 
+/* DELETE BUTTON */
 .btn-delete{
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -828,6 +989,7 @@ main .recent-tasks a{
     opacity: 0.85;
 }
 
+/*ANIMATION*/
 @keyframes popIn{
     from{
         transform: scale(0.85);
@@ -838,22 +1000,18 @@ main .recent-tasks a{
         opacity: 1;
     }
 }
-/*RESPONSIVE - MATCHES TASKBOARD BREAKPOINTS*/
 
-/*LAPTOPS - the 4 stat cards need ~1650px to sit in one row once the 14rem
-  sidebar + 23rem right panel are reserved. Most laptop screens don't have
-  that much room left, so wrap to 2 columns well before the row runs out
-  of space (this is separate from the 1200px breakpoint below, which also
-  collapses the sidebar and hides the right panel - that's too late for this)*/
-@media screen and (max-width: 1650px){
-    main .insights{
-        grid-template-columns: repeat(2, 1fr);
+/*MEDIA QUERIES*/
+@media only screen and (max-width: 564px){
+    .wrapper{
+        margin: 20px;
     }
 }
 
 /*Big Tablets and small laptops*/
 @media screen and (max-width: 1200px){
     .container{
+        
         width: 94%;
         grid-template-columns: 7rem 1fr;
     }
@@ -886,8 +1044,10 @@ main .recent-tasks a{
         display: none;
     }
 
-    main .insights{
-        grid-template-columns: repeat(2, 1fr);
+    .wrapper {
+        max-height: 85vh;      /* Caps the height so it never runs off the screen edge */
+        overflow-y: auto;       /* Enables scrolling ONLY when screen is short */
+        padding-top: 100px;     /* Tucks the padding slightly for extra space */
     }
 }
 
@@ -952,22 +1112,15 @@ main .recent-tasks a{
         padding: 0 1rem;
     }
 
-    main .insights{
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-
     main .recent-tasks{
         position: relative;
         margin: 3rem 0 0 0;
         width: 100%;
-        overflow-x: auto;
     }
 
     main .recent-tasks table{
         width: 100%;
         margin: 0;
-        min-width: 600px;
     }
 
     .right{
@@ -1014,7 +1167,9 @@ main .recent-tasks a{
 }
 
 @media screen and (max-width: 480px) {
-    main .insights{
-        grid-template-columns: 1fr;
+    .wrapper {
+        width: 92%;             /* Makes the 430px width fluid so it fits small screens */
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
