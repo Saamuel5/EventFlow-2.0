@@ -67,9 +67,11 @@ themeToggler.addEventListener('click', () => {
 const recentTasksBody = document.getElementById("recentTasksBody");
 
 const tasksRef = collection(db, "tasks");
+const teamRef = collection(db, "teamMembers");
 
 let currentUserId = null;
 let unsubscribeTasks = null; // stops the previous listener when we switch users
+let unsubscribeTeam = null; // stops the previous listener when we switch users
 
 
 // ===============================
@@ -94,6 +96,9 @@ onAuthStateChanged(auth, (user) => {
 
     if (unsubscribeTasks) unsubscribeTasks();
     startTaskListener();
+
+    if (unsubscribeTeam) unsubscribeTeam();
+    startTeamListener();
 });
 
 
@@ -334,6 +339,53 @@ function startTaskListener() {
 
 
 // ===============================
+// TEAM OVERVIEW (RIGHT PANEL)
+// ===============================
+function updateTeamOverview(teamMembers) {
+
+    const overviewList = document.getElementById("teamOverviewList");
+    if (!overviewList) return;
+
+    if (teamMembers.length === 0) {
+        overviewList.innerHTML = `<p class="text-muted">No team members yet.</p>`;
+        return;
+    }
+
+    const roleCounts = {};
+    teamMembers.forEach((person) => {
+        const role = person.role || "Unspecified";
+        roleCounts[role] = (roleCounts[role] || 0) + 1;
+    });
+
+    const roleLines = Object.entries(roleCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([role, count]) => `<small>${role} • ${count}</small>`)
+        .join("<br>");
+
+    overviewList.innerHTML = `
+        <div class="deadline-item">
+            <p><b>${teamMembers.length} ${teamMembers.length === 1 ? "person" : "people"} total</b></p>
+            ${roleLines}
+        </div>
+    `;
+}
+
+function startTeamListener() {
+
+    const myTeamQuery = query(teamRef, where("userId", "==", currentUserId));
+
+    unsubscribeTeam = onSnapshot(myTeamQuery, (snapshot) => {
+
+        const teamMembers = snapshot.docs.map(docSnap => docSnap.data());
+        updateTeamOverview(teamMembers);
+
+    }, (error) => {
+        console.error("Failed to load team members:", error);
+    });
+}
+
+
+// ===============================
 // LOGOUT MODAL
 // ===============================
 const logoutBtn = document.getElementById("logoutBtn");
@@ -353,6 +405,7 @@ cancelLogout.addEventListener("click", () => {
 confirmLogout.addEventListener("click", async () => {
     try {
         if (unsubscribeTasks) unsubscribeTasks();
+        if (unsubscribeTeam) unsubscribeTeam();
         await signOut(auth);
     } finally {
         window.location.href = "index.html";

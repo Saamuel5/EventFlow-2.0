@@ -101,11 +101,18 @@ let editingTaskId = null; // Firestore doc id of the task being edited, or null 
 
 const tasksRef = collection(db, "tasks");
 const eventsRef = collection(db, "events");
+const teamRef = collection(db, "teamMembers");
 
 // Events belonging to the current user, keyed by Firestore doc id. Used to
 // populate the "Event" select in the task form and the event filter dropdown.
 let eventsCache = {};
 let unsubscribeEvents = null;
+
+// Team members belonging to the current user, keyed by Firestore doc id.
+// Used to populate the "Assigned To" select in the task form (added on the
+// Team page instead of a hardcoded list).
+let teamCache = {};
+let unsubscribeTeam = null;
 
 const eventAreaSelect = document.getElementById("event-area");
 const eventFilterSelect = document.getElementById("eventFilterSelect");
@@ -187,8 +194,10 @@ onAuthStateChanged(auth, (user) => {
 
     if (unsubscribeTasks) unsubscribeTasks();
     if (unsubscribeEvents) unsubscribeEvents();
+    if (unsubscribeTeam) unsubscribeTeam();
     startTaskListener();
     startEventListener();
+    startTeamListener();
 });
 
 
@@ -686,6 +695,45 @@ eventFilterSelect.addEventListener("change", () => {
     activeEventBanner.style.display = "none";
     filterTasks();
 });
+
+
+// ===============================
+// LIVE SYNC OF TEAM MEMBERS (SCOPED TO THE CURRENT USER)
+// ===============================
+// The "Assigned To" select in the task form is built from the people added
+// on the Team page, instead of a fixed list of names.
+function startTeamListener() {
+
+    const myTeamQuery = query(teamRef, where("userId", "==", currentUserId));
+
+    unsubscribeTeam = onSnapshot(myTeamQuery, (snapshot) => {
+
+        teamCache = {};
+        snapshot.forEach((docSnap) => {
+            teamCache[docSnap.id] = docSnap.data();
+        });
+
+        populateAssignedToFormOptions();
+
+    }, (error) => {
+        console.error("Failed to load team members:", error);
+    });
+}
+
+function populateAssignedToFormOptions() {
+    const previousValue = assignedSelect.value;
+
+    const members = Object.values(teamCache).sort((a, b) => a.name.localeCompare(b.name));
+
+    assignedSelect.innerHTML = members.length === 0
+        ? `<option value="">No team members yet - add one on the Team page</option>`
+        : `<option value="">Select User</option>` +
+          members.map((member) => `<option value="${member.name}">${member.name}</option>`).join("");
+
+    if (previousValue && members.some((member) => member.name === previousValue)) {
+        assignedSelect.value = previousValue;
+    }
+}
 
 
 // ===============================

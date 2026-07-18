@@ -649,6 +649,12 @@ main .recent-tasks a{
     --box-shadow: 0 2rem 3rem var(--color-light);
 }
 
+/*PROFILE PHOTO ICON - INVERT TO WHITE IN DARK MODE
+  (the default icon is a dark silhouette that disappears on the dark background)*/
+.dark-theme-variables .profile-photo img{
+    filter: invert(1) brightness(1.5);
+}
+
 /*UPCOMING DEADLINE ITEM ANIMATION (dashboard.js renders these dynamically)*/
 .deadline-item{
     animation: fadeInUp 0.4s ease forwards;
