@@ -289,6 +289,64 @@ main .date i{
     font-size: 1.1rem;
 }
 
+main .overdue-banner{
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    background: rgba(255, 119, 130, 0.12);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--border-radius-2);
+    margin-top: 1.2rem;
+    padding: 1rem 1.4rem;
+}
+
+main .overdue-banner-icon{
+    font-size: 1.8rem;
+    color: var(--color-danger);
+    flex-shrink: 0;
+}
+
+main .overdue-banner-body{
+    flex: 1;
+    min-width: 0;
+}
+
+main .overdue-banner-body p{
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+main .overdue-banner-body p b{
+    color: var(--color-danger);
+}
+
+main .overdue-banner-list{
+    color: var(--color-dark-variant);
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+main .overdue-banner-link{
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--color-danger);
+    color: var(--color-white);
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius-1);
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+main .overdue-banner-link:hover{
+    opacity: 0.9;
+}
+
 main .insights{
     display: grid;
     grid-template-columns: repeat(4, 1fr);

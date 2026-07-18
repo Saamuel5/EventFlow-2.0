@@ -67,6 +67,20 @@
                 <span id="current-date"></span>
             </div>
 
+            <!--OVERDUE WARNING BANNER-->
+            <div class="overdue-banner" id="overdueBanner" style="display:none;">
+                <div class="overdue-banner-icon">
+                    <i class="ri-error-warning-fill"></i>
+                </div>
+                <div class="overdue-banner-body">
+                    <p><b id="overdueBannerCount">0</b> <span id="overdueBannerLabel">tasks are overdue</span></p>
+                    <div class="overdue-banner-list" id="overdueBannerList"></div>
+                </div>
+                <a href="taskboard.html?status=Overdue" class="overdue-banner-link">
+                    View Tasks <i class="ri-arrow-right-line"></i>
+                </a>
+            </div>
+
             <!--STATISTICS-->
             <div class="insights">
                 <!--TOTAL TASKS-->
