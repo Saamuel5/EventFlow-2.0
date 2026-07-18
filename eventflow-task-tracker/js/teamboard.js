@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase-config.js";
-import { isTaskOverdue, getOverdueTasks } from "./task-utils.js";
+import { isTaskOverdue, getOverdueTasks, syncOverdueTasks } from "./task-utils.js";
 import {
     onAuthStateChanged,
     signOut
@@ -356,6 +356,8 @@ function startTaskListener() {
     const myTasksQuery = query(tasksRef, where("userId", "==", currentUserId));
 
     unsubscribeTasks = onSnapshot(myTasksQuery, (snapshot) => {
+
+        syncOverdueTasks(db, snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
 
         const tasks = snapshot.docs.map(docSnap => docSnap.data());
 

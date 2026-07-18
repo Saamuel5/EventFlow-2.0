@@ -389,6 +389,7 @@ main .recent-tasks table{
 .task-desc-text{
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     font-size: 0.78rem;
@@ -1174,11 +1175,10 @@ main .recent-tasks a{
 }
 
 .textarea-field ~ .label{
-    top: 24px;
-    transform: none;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
-.textarea-field:focus ~ .label,
 .textarea-field:not(:placeholder-shown) ~ .label{
     top: 0;
     transform: none;
