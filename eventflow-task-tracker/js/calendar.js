@@ -83,6 +83,7 @@ const editTaskModal = document.getElementById("editTaskModal");
 const closeEditTaskModal = document.getElementById("closeEditTaskModal");
 const editTaskForm = document.getElementById("editTaskForm");
 const editTaskNameInput = document.getElementById("edit-task-name");
+const editTaskDescriptionInput = document.getElementById("edit-task-description");
 const editTaskEventSelect = document.getElementById("edit-task-event");
 const editTaskAssignedSelect = document.getElementById("edit-task-assigned-to");
 const editTaskSelectedUsersContainer = document.getElementById("edit-task-selected-users");
@@ -393,6 +394,7 @@ function openDayItemsModal(date, items) {
                 </div>
                 <small class="text-muted">${task.eventArea}</small><br>
                 <small class="text-muted">Assigned to ${task.assignedTo || "—"}</small>
+                ${task.description ? `<p class="day-task-desc">${task.description}</p>` : ""}
             </div>
         `).join("");
 
@@ -536,6 +538,7 @@ function openEditTaskModal(taskId) {
 
     editTaskNameInput.value = task.taskName || "";
     editTaskNameInput.setCustomValidity("");
+    editTaskDescriptionInput.value = task.description || "";
     editTaskEventSelect.value = task.eventArea || "";
 
     editTaskAssignedUsers = task.assignedTo ? task.assignedTo.split(", ").filter(Boolean) : [];
@@ -561,6 +564,7 @@ closeEditTaskModal.addEventListener("click", () => {
     editTaskAssignedUsers = [];
     renderEditTaskAssignedUsers();
     editTaskNameInput.setCustomValidity("");
+    editTaskDescriptionInput.value = "";
 });
 
 // ===============================
@@ -640,6 +644,7 @@ editTaskForm.addEventListener("submit", async (e) => {
     try {
         await updateDoc(doc(db, "tasks", editingTaskId), {
             taskName,
+            description: editTaskDescriptionInput.value.trim(),
             eventArea: editTaskEventSelect.value,
             assignedTo: editTaskAssignedUsers.join(", "),
             priority: editTaskPrioritySelect.value,
@@ -651,6 +656,7 @@ editTaskForm.addEventListener("submit", async (e) => {
         editingTaskId = null;
         editTaskAssignedUsers = [];
         renderEditTaskAssignedUsers();
+        editTaskDescriptionInput.value = "";
         // onSnapshot handles re-rendering automatically
     } catch (err) {
         alert("Couldn't save task: " + err.message);
