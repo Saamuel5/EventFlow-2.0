@@ -81,6 +81,7 @@ const modalTitle = document.getElementById("modalTitle");
 const dueDateInput = document.getElementById("due-date");
 const statusSelect = document.getElementById("status");
 const taskNameInput = document.getElementById("task-name");
+const taskDescriptionInput = document.getElementById("task-description");
 
 // Format an ISO "YYYY-MM-DD" date string (how <input type="date"> stores
 // values) as "DD/MM/YYYY" for display in the table and kanban view.
@@ -476,7 +477,12 @@ function buildRow(id, task) {
     const priority = task.priority || "Medium";
 
     row.innerHTML = `
-        <td>${task.taskName}</td>
+        <td>
+            <div class="task-name-cell">
+                <span class="task-name-text">${task.taskName}</span>
+                ${task.description ? `<span class="task-desc-text" title="${task.description.replace(/"/g, "&quot;")}">${task.description}</span>` : ""}
+            </div>
+        </td>
         <td>${task.eventArea}</td>
         <td><span class="priority-badge priority-${priority.toLowerCase()}">${priority}</span></td>
         <td>${task.assignedTo}</td>
@@ -525,6 +531,7 @@ function buildKanbanCard(id, task) {
             </div>
         </div>
         <p class="kanban-card-title">${task.taskName}</p>
+        ${task.description ? `<p class="kanban-card-desc">${task.description}</p>` : ""}
         <span class="priority-badge priority-${priority.toLowerCase()}">${priority}</span>
         <div class="kanban-card-footer">
             <span class="kanban-card-assignee"><i class="ri-user-line"></i>${task.assignedTo || "Unassigned"}</span>
@@ -804,6 +811,7 @@ form.addEventListener("submit", async function (e) {
     const dueDate = document.getElementById("due-date").value;
     const status = document.getElementById("status").value;
     const priority = document.getElementById("priority").value;
+    const description = taskDescriptionInput.value.trim();
 
     const assignedText = assignedUsers.join(", ");
 
@@ -812,11 +820,11 @@ form.addEventListener("submit", async function (e) {
     try {
         if (editingTaskId) {
             // Don't touch userId on edit - the task should stay owned by whoever created it
-            const taskData = { taskName, eventId, eventArea, assignedTo: assignedText, dueDate, status, priority };
+            const taskData = { taskName, description, eventId, eventArea, assignedTo: assignedText, dueDate, status, priority };
             await updateDoc(doc(db, "tasks", editingTaskId), taskData);
             editingTaskId = null;
         } else {
-            const taskData = { taskName, eventId, eventArea, assignedTo: assignedText, dueDate, status, priority, userId: currentUserId, createdAt: serverTimestamp() };
+            const taskData = { taskName, description, eventId, eventArea, assignedTo: assignedText, dueDate, status, priority, userId: currentUserId, createdAt: serverTimestamp() };
             await addDoc(tasksRef, taskData);
         }
 
@@ -844,6 +852,7 @@ function openEditModal(id) {
     editingTaskId = id;
 
     document.getElementById("task-name").value = task.taskName;
+    taskDescriptionInput.value = task.description || "";
 
     let matchedEventId = task.eventId || "";
     if (!matchedEventId && task.eventArea) {
