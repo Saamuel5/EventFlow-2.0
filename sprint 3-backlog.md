@@ -12,10 +12,11 @@
 
 | Task | Assignee | Status | Est. Hours |Actual Hours|
 |------|----------|--------|------------|------------|
-| Create new rpositry  | Saamuel Kolandasamy| Completed | 30 minutes | 30 minutes |
+| Create new repositry  | Saamuel Kolandasamy| Completed | 30 minutes | 30 minutes |
 | Update README | Saamuel Kolandasamy | Completed | 1 hour| 2 hours|
 | Build Kanban board view | Shanjana De Lerra  | Completed | 2 hours |2 hours |
 | Build calendar for upcoming events | Shanjana De Lerra | Completed | 2hours | 2 hours |
+| Implementing database  | SHanjana De Lerra| Completed | 5 hours | 2.5 hours |
 | Implement improved form validation | Shanjana De Lerra | Completed | 3 hours | 2 hours |
 | Final bug fixing and testing | Shanjana De Lerra | Completed | 3. 5 hours | 2 hours |
 | Create release tag v1.2-iteration3 | Saamuel Kolandasamy | Completed | 30 mins | 20 minutes |
