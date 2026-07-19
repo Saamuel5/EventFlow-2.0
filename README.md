@@ -69,9 +69,9 @@ The project is divided into three iterations. Each iteration delivers a working 
 
 | Iteration   | User Stories | Focus                                                                       |
 | ----------- | ------------ | --------------------------------------------------------------------------- |
-| Iteration 1 | US1–US6      | Core system: Login, Register, Create, View, Edit, and Delete tasks          |
-| Iteration 2 | US7–US12     | Enhancements: Status, Filtering, Dashboard, Priority |
-| Iteration 3 | US13–US15    | Advanced features: Kanban Board, Calendar View, and Form Validation and Firebase Database      |
+| Iteration 1 | US1–US6      | Core system: Login, Register, Create and View tasks |
+| Iteration 2 | US7–US12     | Enhancements: Status, Filtering, Dashboard, Priority, Edit, and Delete tasks  |
+| Iteration 3 | US13–US15    | Advanced features: Kanban Board, Calendar View, and Form Validation and Firebase Database  |
 
 **Total Story Points: 89**
 
