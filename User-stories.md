@@ -38,8 +38,8 @@
 
 | Iteration | User Stories | Focus |
 |-----------|-------------|-------|
-| Iteration 1 | US1 - US6 | MVP: Login, Register, Create, View, Edit, Delete |
-| Iteration 2 | US7 - US12 | Enhancement: Status, Filter, Upcoming deadlines, Dark/Light mode, Logout |
+| Iteration 1 | US1 - US6 | MVP: Login, Register, Create, View |
+| Iteration 2 | US7 - US12 | Enhancement: Status, Filter, Upcoming deadlines, Dark/Light mode, Edit, Delete, Logout |
 | Iteration 3 | US13 - US15 | Advanced: Dashboard, Priority, Database, Kanban Board, Calendar, Validation |
 
 **Total Story Points: 89**
