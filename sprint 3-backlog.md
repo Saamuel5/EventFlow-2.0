@@ -12,17 +12,31 @@
 
 | Task | Assignee | Status | Est. Hours |Actual Hours|
 |------|----------|--------|------------|------------|
-| Create new repositry  | Saamuel Kolandasamy| Completed | 30 minutes | 30 minutes |
-| Update README | Saamuel Kolandasamy | Completed | 1 hour| 2 hours|
-| Build Kanban board view | Shanjana De Lerra  | Completed | 2 hours |2 hours |
-| Build calendar for upcoming events | Shanjana De Lerra | Completed | 2hours | 2 hours |
-| Implementing database  | SHanjana De Lerra| Completed | 5 hours | 2.5 hours |
-| Implement improved form validation | Shanjana De Lerra | Completed | 3 hours | 2 hours |
-| Final bug fixing and testing | Shanjana De Lerra | Completed | 3. 5 hours | 2 hours |
-| Create release tag v1.2-iteration3 | Saamuel Kolandasamy | Completed | 30 mins | 20 minutes |
-| Final GitHub cleanup and documentation | Saamuel Kolandasamy | Completed | 1 hour | 2 hours |
-| Write reflective report | Tharany A/ P Jayakumar | Completed | 3 hours | 4 hours |
-| Final system review | Tharany A/P Jayakumar | completed | 1 hour | 1 hour|
+| Create GitHub issues for Sprint 3 features  | Saamuel Kolandasamy | Completed | 1 hour | 1 hour |
+| Create the Sprint 3 milestone  | Saamuel Kolandasamy | Completed | 30 minutes | 30 minutes |
+| Update README with sprint 3cfeatures | Saamuel Kolandasamy | Completed | 2 hour| 1 hours|
+| Create the Kanban board interface  | Shanjana De Lerra  | Completed | 4 hours |2 hours |               |
+| Add In progress, Completed, and Overdue columns | Shanjana De Lerra  | Completed | 2 hours |2 hours |
+| Display task cards in the correct Kanban columns  | Shanjana De Lerra | Completed | 2 hours | 2 hours |
+| Implement movement of tasks between Kanban columns  | Shanjana De Lerra| Completed | 5 hours | 2.5 hours |
+| Save the updated task status after movement  | Shanjana De Lerra | Completed | 2 hours | 2 hours |
+| Create the calendar view interface | Shanjana De Lerra | Completed | 2 hours | 2 hours |
+| Display tasks according to their due dates | Shanjana De Lerra Mahendran | Completed | 2 hours | 2 hours |
+| Highlight overdue tasks in red | Shanjana De Lerra Mahendran | Completed | 1 hour | 1 hour |
+| Improve validation for task forms | Shanjana De Lerra Mahendran | Completed | 2.5 hours | 2 hours |
+| Add clear validation error messages | Shanjana De Lerra Mahendran | Completed | 2.5 hours | 2 hours |
+| Prevent empty task submissions | Shanjana De Lerra Mahendran | Completed | 2.5 hours | 2 hours |
+| Review the acceptance criteria | Tharany A/P Jayakumar | Completed | 2.5 hours | 2 hours |
+| Define and finalise user stories and backlog technical requirements | Tharany A/P Jayakumar | Completed | 2.5 hours | 3 hours |
+| Test the Kanban board and task movement | Tharany A/P Jayakumar | Completed | 2.5 hours | 2 hours |
+| Test the calendar view and overdue highlighting | Tharany A/P Jayakumar | Completed | 2.5 hours | 2 hours |
+| Test form validation and error messages | Tharany A/P Jayakumar | Completed | 1.5 hours | 2 hours |
+| Prepare the Sprint 3 stand-up meeting summaries | Tharany A/P Jayakumar | Completed | 1.5 hours | 2 hours |
+| Conduct the final product review and approval | Tharany A/P Jayakumar | Completed | 2 hours | 2 hours |
+| Conduct the final GitHub and code review | Saamuel Kolandasamy  | Completed | 2 hours | 2 hours |
+| Create the final release tag | Saamuel Kolandasamy | completed | 1.5 hour | 1 hour|
+
+
 
 ---
 
