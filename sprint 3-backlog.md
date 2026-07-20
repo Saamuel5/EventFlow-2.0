@@ -33,9 +33,9 @@
 | Test the calendar view and overdue highlighting | Tharany A/P Jayakumar | Completed | 2.5 hours | 2 hours |
 | Test form validation and error messages | Tharany A/P Jayakumar | Completed | 1.5 hours | 2 hours |
 | Prepare the Sprint 3 stand-up meeting summaries | Tharany A/P Jayakumar | Completed | 1.5 hours | 2 hours |
-| Conduct the final product review and approval | Tharany A/P Jayakumar | Completed | 2 hours | 2 hours |
+| Conduct the final product review and Final Testing | Saamuel Kolandasamy | Completed | 2 hours | 2 hours |
 | Conduct the final GitHub and code review | Saamuel Kolandasamy  | Completed | 2 hours | 2 hours |
-| Create the final release tag | Saamuel Kolandasamy | completed | 1.5 hour | 1 hour|
+| Create the final release tag | Saamuel Kolandasamy | completed | 1.5 hour | 1.5 hour|
 
 
 
