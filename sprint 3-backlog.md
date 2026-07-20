@@ -20,6 +20,7 @@
 | Display task cards in the correct Kanban columns  | Shanjana De Lerra | Completed | 2 hours | 2 hours |
 | Implement movement of tasks between Kanban columns  | Shanjana De Lerra| Completed | 5 hours | 2.5 hours |
 | Save the updated task status after movement  | Shanjana De Lerra | Completed | 2 hours | 2 hours |
+| Add priority columns  | Shanjana De Lerra | Completed | 2 hours | 2 hours |
 | Create the calendar view interface | Shanjana De Lerra | Completed | 2 hours | 2 hours |
 | Display tasks according to their due dates | Shanjana De Lerra Mahendran | Completed | 2 hours | 2 hours |
 | Highlight overdue tasks in red | Shanjana De Lerra Mahendran | Completed | 1 hour | 1 hour |
