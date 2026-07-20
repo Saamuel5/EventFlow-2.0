@@ -157,6 +157,7 @@ Week 3 (7 days)
 ---
 
 # Sprint 3 Backlog 
+
 ## Advanced Features and Final Polish
 
 **Sprint Goal:** Implement Kanban board, calendar view and improved validation to complete the full system ready for presentation.
@@ -176,7 +177,7 @@ Week 3 (7 days)
 | Create the Kanban board interface  | Shanjana De Lerra  | ✅ Completed | 4 hours |2 hours |               |
 | Add In progress, Completed, and Overdue columns | Shanjana De Lerra  | ✅ Completed | 2 hours |2 hours |
 | Display task cards in the correct Kanban columns  | Shanjana De Lerra | ✅ Completed | 2 hours | 2 hours |
-| Implement movement of tasks between Kanban columns  | Shanjana De Lerra| ✅ Completed | 5 hours | 2.5 hours |
+| Implement movement of tasks between Kanban columns  | Shanjana De Lerra | ✅ Completed | 5 hours | 2.5 hours |
 | Save the updated task status after movement  | Shanjana De Lerra | ✅ Completed | 2 hours | 2 hours |
 | Create the calendar view interface | Shanjana De Lerra | ✅ Completed | 2 hours | 2 hours |
 | Display tasks according to their due dates | Shanjana De Lerra Mahendran | ✅ Completed | 2 hours | 2 hours |
@@ -211,7 +212,7 @@ Week 3 (7 days)
 - All PRs merged
 - Release tag v1.2-iteration3 created
 - System ready for presentation!!
-
+  
 ---
 
 # Iterative and Incremental Development
