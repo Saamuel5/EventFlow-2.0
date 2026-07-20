@@ -264,16 +264,37 @@ Each new feature is developed in a separate feature branch before being merged i
 
 Example feature branches:
 
-* `firebase-integration`
-* `firebase-crud`
-* `task-priority`
-* `priority-sorting`
-* `kanban-board`
-* `kanban-task-movement`
-* `calendar-view`
-* `overdue-task-highlight`
-* `form-validation`
-* `readme-documentation`
+* `main`
+* `readme-documentation-patch-1`
+* `readme-documentation-patch-5`
+* `readme-documentation-patch-4`
+* `readme-documentation-patch-2`
+* `readme-documentation-patch-3`
+* `User-stories`
+* `Product-backlog`
+* `sprint-3-backlog`
+* `sprint-2-backlog`
+* `sprint-1-backlog`
+* `bugfix/overdue-status`
+* `feature/task-description`
+* `feature/team-management`
+* `feature/task-filter`
+* `feature/task-validation`
+* `feature/calendar-v2`
+* `feature/priority`
+* `feature/event-board`
+* `feature/kanban-board`
+- `authentication-ui`
+- `create-task`
+- `update-task`
+- `delete-task`
+- `upcoming-deadlines`
+- `task-overview`
+- `logout-function`
+- `filters`
+- `table-improvements`
+- `add-multiple-users`
+- `dark-mode`
 
 After a feature is completed, a pull request is created. Another team member reviews the changes before the feature branch is merged into `main`.
 
