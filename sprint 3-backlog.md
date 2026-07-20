@@ -14,7 +14,7 @@
 |------|----------|--------|------------|------------|
 | Create GitHub issues for Sprint 3 features  | Saamuel Kolandasamy | Completed | 1 hour | 1 hour |
 | Create the Sprint 3 milestone  | Saamuel Kolandasamy | Completed | 30 minutes | 30 minutes |
-| Update README with sprint 3cfeatures | Saamuel Kolandasamy | Completed | 2 hour| 1 hours|
+| Update README with sprint 3 features | Saamuel Kolandasamy | Completed | 2 hour| 1 hours|
 | Create the Kanban board interface  | Shanjana De Lerra  | Completed | 4 hours |2 hours |               |
 | Add In progress, Completed, and Overdue columns | Shanjana De Lerra  | Completed | 2 hours |2 hours |
 | Display task cards in the correct Kanban columns  | Shanjana De Lerra | Completed | 2 hours | 2 hours |
@@ -33,7 +33,7 @@
 | Test the calendar view and overdue highlighting | Tharany A/P Jayakumar | Completed | 2.5 hours | 2 hours |
 | Test form validation and error messages | Tharany A/P Jayakumar | Completed | 1.5 hours | 2 hours |
 | Prepare the Sprint 3 stand-up meeting summaries | Tharany A/P Jayakumar | Completed | 1.5 hours | 2 hours |
-| Conduct the final product review and approval | Tharany A/P Jayakumar | Completed | 2 hours | 2 hours |
+| Conduct the final product review and approval | Saamuel Kolandasamy | Completed | 2 hours | 2 hours |
 | Conduct the final GitHub and code review | Saamuel Kolandasamy  | Completed | 2 hours | 2 hours |
 | Create the final release tag | Saamuel Kolandasamy | completed | 1.5 hour | 1 hour|
 
