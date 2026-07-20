@@ -1,7 +1,7 @@
 # Sprint 3 Test Report — EventFlow 2.0
 ## Iteration 3: Advanced Features (Firebase, Priority, Kanban, Calendar, Validation)
 
-**Tested by:** Tharany A/P Jayakumar (Product Owner)
+**Tested by:** Saamuel Kolandasamy (Scrum Master)
 
 **Sprint Duration:** Week 3 (7 days)
 
@@ -84,12 +84,16 @@ User stories delivered and tested this sprint:
 
 | Item | Details |
 |------|---------|
-| Tester | Tharany A/P Jayakumar |
+| Tester | Saamuel Kolandasamy |
 | Browsers Tested | Google Chrome, Microsoft Edge, Mozilla Firefox |
 | Testing Type | Manual Functional Testing |
-| Device | Laptop |
+| Device | Windows 11 Laptop |
 
 ---
 
 ## 6. Conclusion
-All 5 Sprint 3 user stories (US11–US15) passed testing with no outstanding bugs. Firebase integration, Kanban board, calendar view, and form validation are all confirmed stable across Chrome, Edge, and Firefox. Sprint 3 goal was fully met and the system is demo-ready.
+All five Sprint 3 user stories, US11 to US15, were successfully completed and passed all planned test cases with no outstanding bugs. The testing confirmed that Firebase data persistence and CRUD operations are working correctly, task priority labels and sorting function as expected, and the Kanban board allows users to view and move tasks between different status columns. The calendar view correctly displays tasks according to their due dates and highlights overdue tasks in red. Improved form validation also prevents empty or invalid submissions and provides clear error messages to users.
+
+The system was tested across Google Chrome, Microsoft Edge, and Mozilla Firefox. All major features worked consistently in each browser, with no browser-specific issues, major layout problems, or console errors found during the final testing process. The minor bugs identified earlier in the sprint were fixed and retested before the sprint was closed.
+
+Overall, all Sprint 3 acceptance criteria and Definition of Done requirements were achieved. All related pull requests were reviewed and merged, the final documentation was updated, and release tag `v1.2-iteration3` was created. Therefore, the Sprint 3 goal was fully met, and EventFlow 2.0 is stable, complete, and ready for the final presentation and system demonstration.
