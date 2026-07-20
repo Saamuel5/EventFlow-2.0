@@ -6,7 +6,7 @@
 | --------------- | ---------------------------------------------- |
 | Tester          | Saamuel Kolandasamy                            |
 | Testing Type    | Manual Functional Testing                      |
-| Device          | Laptop                                         |
+| Device          | Windows 11 Laptop                              |
 | Browsers Tested | Google Chrome, Microsoft Edge, Mozilla Firefox |
 
 ---
